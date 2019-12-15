@@ -10,19 +10,27 @@ class Rubik:
         self.dim = len(initial_state[0])
         self.state = copy.deepcopy(initial_state)
     
-    # def move(self, side, count):
-    #     if side == 0:
-    #         pass
-    #     elif side == 1:
-    #         pass
-    #     elif side == 2:
-    #         pass
-    #     elif side == 3:
-    #         pass
-    #     elif side == 4:
-    #         rotate([(5, 1, 1), (5, 0, 1), (4, 1, 1), (4, 0, 1), (2, 1, 1), (2, 0, 1), (0, 1, 1), (0, 1, 1)], 4, count)
-    #     elif side == 5:
-    #         pass
+    def move(self, side, clockwise):
+        """
+        This method makes a move and create a new rubik cube instance.
+        Input
+        - side: the number of the face to be rotated
+        - clockwise: if True then the rotation is clockwise
+        """
+        
+        cw = 1 if clockwise else 3
+        if side == 0:
+            return self.rotate([(5, 1, 1), (5, 1, 0), (3, 0, 1), (3, 0, 0), (2, 0, 1), (2, 0, 0), (1, 0, 1), (1, 0, 0)], side, cw)
+        elif side == 1:
+            return self.rotate([(0, 0, 0), (0, 1, 0), (2, 0, 0), (2, 1, 0), (4, 0, 0), (4, 1, 0), (5, 0, 0), (5, 1, 0)], side, cw)
+        elif side == 2:
+            return self.rotate([(0, 1, 0), (0, 1, 1), (3, 0, 0), (3, 1, 0), (4, 0, 0), (4, 0, 1), (1, 0, 1), (1, 1, 1)], side, cw)
+        elif side == 3:
+            return self.rotate([(5, 1, 1), (5, 0, 1), (4, 1, 1), (4, 0, 1), (2, 1, 1), (2, 0, 1), (0, 1, 1), (0, 0, 1)], side, cw)
+        elif side == 4:
+            return self.rotate([(1, 1, 0), (1, 1, 1), (2, 1, 0), (2, 1, 1), (3, 1, 0), (3, 1, 1), (5, 0, 1), (5, 0, 0)], side, cw)
+        elif side == 5:
+            return self.rotate([(0, 0, 1), (0, 0, 0), (1, 0, 0), (1, 1, 0), (4, 1, 0), (4, 1, 1), (3, 1, 1), (3, 0, 1)], side, cw)
 
     def rotate(self, idx, num, count):
         """

@@ -135,3 +135,16 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
     
     return None, generated_nodes, expanded_nodes, max_in_memory
 
+def show_solution(result):
+    for i, move in enumerate(result[0]):
+        print('move ' + str(i + 1) + ': face ' + str(move[0] + 1), end=' ')
+        if move[1]:
+            print('clockwise')
+        else:
+            print('counter clockwise')
+        
+    print()
+    print('solution found with ' + str(len(result[0])) + ' moves')
+    print('number of nodes generated: ' + str(result[1]))
+    print('number of nodes expanded: ' + str(result[2]))
+    print('maximum number of nodes in memory: ' + str(result[3]))

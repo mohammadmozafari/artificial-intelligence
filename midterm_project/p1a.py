@@ -87,18 +87,37 @@ class Rubik:
         for i, (x, y, z) in enumerate(idx):
             rubik[x][y][z] = rotated_list[i]
         
-# def solve_with_IDS(rubik, initial_depth, final_depth):
+def solve_with_IDS(rubik, initial_depth, final_depth):
     
-#     sides = [0, 1, 2, 3, 4, 5]
-#     cw = [True, False]
+    # TODO: random selection between actions
+    actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
 
-#     def depth_limited_search(rubik, i):
-#         if rubik.goal_test():
+    def depth_limited_search(rubik, limit, move):
+        if rubik.goal_test():
+            if move != None:
+                result.append(move)
+            return True
+        elif limit == 0:
+            return 'cutoff'
+        else:
+            cut = False
+            for action in actions:
+                child = rubik.move(action[0], action[1])
+                resp = depth_limited_search(child, limit - 1, action)
+                if resp == 'cutoff':
+                    cut = True
+                elif resp != False:
+                    if move != None:
+                        result.append(move)
+                    return True
+            if cut:
+                return 'cutoff'
+            else:
+                return False
 
+    for i in range(initial_depth, final_depth):
+        result = []
+        resp = depth_limited_search(rubik, i, None)
+        if resp != 'cutoff':
+            return result[::-1]
 
-
-#     result = []
-#     for i in range(initial_depth, final_depth):
-#         result = depth_limited_search(rubik, i)
-#     if not result == 'cutoff':
-#         return result

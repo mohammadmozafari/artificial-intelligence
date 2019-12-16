@@ -17,14 +17,13 @@ class Rubik:
         - side: the number of the face to be rotated
         - clockwise: if True then the rotation is clockwise
         """
-        
         cw = 1 if clockwise else 3
         if side == 0:
-            return self.rotate([(5, 1, 1), (5, 1, 0), (3, 0, 1), (3, 0, 0), (2, 0, 1), (2, 0, 0), (1, 0, 1), (1, 0, 0)], side, cw)
+            return self.rotate([(5, 1, 0), (5, 1, 1), (3, 0, 1), (3, 0, 0), (2, 0, 1), (2, 0, 0), (1, 0, 1), (1, 0, 0)], side, cw)
         elif side == 1:
             return self.rotate([(0, 0, 0), (0, 1, 0), (2, 0, 0), (2, 1, 0), (4, 0, 0), (4, 1, 0), (5, 0, 0), (5, 1, 0)], side, cw)
         elif side == 2:
-            return self.rotate([(0, 1, 0), (0, 1, 1), (3, 0, 0), (3, 1, 0), (4, 0, 0), (4, 0, 1), (1, 0, 1), (1, 1, 1)], side, cw)
+            return self.rotate([(0, 1, 0), (0, 1, 1), (3, 0, 0), (3, 1, 0), (4, 0, 1), (4, 0, 0), (1, 1, 1), (1, 0, 1)], side, cw)
         elif side == 3:
             return self.rotate([(5, 1, 1), (5, 0, 1), (4, 1, 1), (4, 0, 1), (2, 1, 1), (2, 0, 1), (0, 1, 1), (0, 0, 1)], side, cw)
         elif side == 4:

@@ -1,4 +1,5 @@
 import copy
+from itertools import chain
 
 class Rubik:
     """
@@ -30,6 +31,18 @@ class Rubik:
             return self.rotate([(1, 1, 0), (1, 1, 1), (2, 1, 0), (2, 1, 1), (3, 1, 0), (3, 1, 1), (5, 0, 1), (5, 0, 0)], side, cw)
         elif side == 5:
             return self.rotate([(0, 0, 1), (0, 0, 0), (1, 0, 0), (1, 1, 0), (4, 1, 0), (4, 1, 1), (3, 1, 1), (3, 0, 1)], side, cw)
+
+    def goal_test(self):
+        """
+        This function checks whether we are in final state or not.
+        """
+        for i in range(self.num_faces):
+            for j in range(self.dim):
+                for k in range(self.dim):
+                    if not self.state[i][0][0] == self.state[i][j][k]:
+                        return False
+        x = list(chain.from_iterable(chain.from_iterable(self.state)))
+        return True if len(set(x)) == 6 else False
 
     def rotate(self, idx, num, count):
         """
@@ -74,3 +87,18 @@ class Rubik:
         for i, (x, y, z) in enumerate(idx):
             rubik[x][y][z] = rotated_list[i]
         
+# def solve_with_IDS(rubik, initial_depth, final_depth):
+    
+#     sides = [0, 1, 2, 3, 4, 5]
+#     cw = [True, False]
+
+#     def depth_limited_search(rubik, i):
+#         if rubik.goal_test():
+
+
+
+#     result = []
+#     for i in range(initial_depth, final_depth):
+#         result = depth_limited_search(rubik, i)
+#     if not result == 'cutoff':
+#         return result

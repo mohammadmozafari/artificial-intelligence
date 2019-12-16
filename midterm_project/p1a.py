@@ -86,13 +86,16 @@ class Rubik:
         rotated_list = rotated_list[-count:] + rotated_list[:-count]
         for i, (x, y, z) in enumerate(idx):
             rubik[x][y][z] = rotated_list[i]
-        
+      
 def solve_with_IDS(rubik, initial_depth, final_depth):
     
     # TODO: random selection between actions
     actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
-
+    
+    generated_nodes, expanded_nodes, max_in_memory, in_memory = 0, 0, 0, 0
     def depth_limited_search(rubik, limit, move):
+
+        nonlocal generated_nodes, expanded_nodes, max_in_memory, in_memory
         if rubik.goal_test():
             if move != None:
                 result.append(move)
@@ -102,8 +105,17 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
         else:
             cut = False
             for action in actions:
+                
+                generated_nodes += 1    # a node is generated
+                expanded_nodes += 1     # a node is expanded
+                in_memory += 1          # a new node in memory
+                if in_memory > max_in_memory:
+                    max_in_memory = in_memory
+                
                 child = rubik.move(action[0], action[1])
                 resp = depth_limited_search(child, limit - 1, action)
+
+                in_memory -= 1
                 if resp == 'cutoff':
                     cut = True
                 elif resp != False:
@@ -119,5 +131,7 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
         result = []
         resp = depth_limited_search(rubik, i, None)
         if resp != 'cutoff':
-            return result[::-1]
+            return result[::-1], generated_nodes, expanded_nodes, max_in_memory
+    
+    return None, generated_nodes, expanded_nodes, max_in_memory
 

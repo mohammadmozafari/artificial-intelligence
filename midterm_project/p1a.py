@@ -32,6 +32,7 @@ class Rubik:
         elif side == 5:
             return self.rotate([(0, 0, 1), (0, 0, 0), (1, 0, 0), (1, 1, 0), (4, 1, 0), (4, 1, 1), (3, 1, 1), (3, 0, 1)], side, cw)
 
+    # TODO: optimize this
     def goal_test(self):
         """
         This function checks whether we are in final state or not.
@@ -86,6 +87,15 @@ class Rubik:
         rotated_list = rotated_list[-count:] + rotated_list[:-count]
         for i, (x, y, z) in enumerate(idx):
             rubik[x][y][z] = rotated_list[i]
+
+    def __eq__(self, value):
+        if not type(value) is Rubik:
+            return False
+        return value.state == self.state
+
+    def __hash__(self):
+        x = list(chain.from_iterable(chain.from_iterable(self.state)))
+        return hash(x)
       
 def solve_with_IDS(rubik, initial_depth, final_depth):
     

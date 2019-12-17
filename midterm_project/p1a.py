@@ -136,15 +136,37 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
     return None, generated_nodes, expanded_nodes, max_in_memory
 
 def show_solution(result):
-    for i, move in enumerate(result[0]):
-        print('move ' + str(i + 1) + ': face ' + str(move[0] + 1), end=' ')
-        if move[1]:
-            print('clockwise')
-        else:
-            print('counter clockwise')
+    if result[0] == None:
+        print()
+        print('no solution found until the specified depth')
+    else:
+        for i, move in enumerate(result[0]):
+            print('move ' + str(i + 1) + ': face ' + str(move[0] + 1), end=' ')
+            if move[1]:
+                print('clockwise')
+            else:
+                print('counter clockwise')
+        print()
+        print('solution found with ' + str(len(result[0])) + ' moves')
         
-    print()
-    print('solution found with ' + str(len(result[0])) + ' moves')
     print('number of nodes generated: ' + str(result[1]))
     print('number of nodes expanded: ' + str(result[2]))
     print('maximum number of nodes in memory: ' + str(result[3]))
+    print('----------------------------------------------------')
+
+def get_rubik():
+    s = [[[0, 0], [0, 0]],  [[1, 1], [1, 1]], [[2, 2], [2, 2]],
+          [[3, 3], [3, 3]], [[4, 4], [4, 4]], [[5, 5], [5, 5]]]
+    for i in range(6):
+        face = input()
+        face = face.split(' ')
+        s[i][0][0], s[i][0][1], s[i][1][0], s[i][1][1] = int(face[0]) - 1, int(face[1]) - 1, int(face[2]) - 1, int(face[3]) - 1
+    return Rubik(s)
+
+def main():
+    r = get_rubik()
+    result = solve_with_IDS(r, 1, 6)
+    show_solution(result)
+
+if __name__ == '__main__':
+    main()

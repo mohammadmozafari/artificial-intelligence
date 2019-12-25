@@ -22,12 +22,14 @@ class Rubik:
     """
     This class represents one instance of rubik puzzle.
     """
-    def __init__(self, initial_state, parent, parent_move=None):
+    def __init__(self, initial_state, parent=None, parent_move=None):
         self.num_faces = len(initial_state)
         self.dim = len(initial_state[0])
         self.state = copy.deepcopy(initial_state)
         self.parent = parent
         self.parent_move = parent_move
+        self.H = self.calculateH()
+        self.G = 0 if parent == None else (parent.G + 1)
 
         x = tuple(chain.from_iterable(chain.from_iterable(self.state)))
         self.hashed = hash(x)
@@ -110,16 +112,51 @@ class Rubik:
         for i, (x, y, z) in enumerate(idx):
             rubik[x][y][z] = rotated_list[i]
 
+    def calculateH(self):
+        """
+        This function calculates the H value for the current rubik state
+        """
+        ls = [0, 0, 0]
+        for i in range(self.num_faces):
+            temp_set = set()
+            for j in range(self.dim):
+                for k in range(self.dim):
+                    temp_set.add(self.state[i][j][k])
+            if len(temp_set) == 1:
+                continue
+            ls[len(temp_set) - 2] += 1
+        return ls[0] + ls[1] * 2 + ls[2] * 4
+
     def __eq__(self, value):
+        """
+        Determines whether this object is equal with another given object
+        """
         if not type(value) is Rubik:
             return False
         return value.state == self.state
 
     def __hash__(self):
+        """
+        Returns the hash value for the current object
+        """
         return self.hashed
+
+    def __lt__(self, other):
+        """
+        Takes another object and returns True if current object is less than the give
+        """
+        f_this = self.G + self.H
+        f_other = other.G + other.H
+        return f_this < f_other
     
 def solve_with_IDS(rubik, initial_depth, final_depth):
-    
+    """
+    Takes a rubik puzzle and tries to solve it using IDS algorithm.
+    Input
+    - rubik: initial state of the puzzle
+    - initial_depth: left range of the limit
+    - final_depth: right range of the limit
+    """
     # TODO: random selection between actions
     actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
     nodes = NodeCount()
@@ -162,6 +199,9 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
     return None, nodes
 
 def show_solution(result):
+    """
+    This is a utility function for organized printing on the terminal.
+    """
     if result[0] == None:
         print()
         print('no solution found until the specified depth')
@@ -184,6 +224,9 @@ def show_solution(result):
     print('----------------------------------------------------')
 
 def get_rubik():
+    """
+    This is a utility function for taking a rubik puzzle from input.
+    """
     s = [[[0, 0], [0, 0]],  [[1, 1], [1, 1]], [[2, 2], [2, 2]],
           [[3, 3], [3, 3]], [[4, 4], [4, 4]], [[5, 5], [5, 5]]]
     for i in range(6):
@@ -193,6 +236,9 @@ def get_rubik():
     return Rubik(s, None, None)
 
 def build_path(a, b):
+    """
+    Given two nodes that are the intersection of searches we construct the path form source to target.
+    """
     path = []
     x = a
     while (x != None) and (x.parent != None):

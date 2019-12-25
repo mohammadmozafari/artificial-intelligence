@@ -117,8 +117,7 @@ class Rubik:
 
     def __hash__(self):
         return self.hashed
-
-# TODO: modify this to use parent node for path creation      
+    
 def solve_with_IDS(rubik, initial_depth, final_depth):
     
     # TODO: random selection between actions
@@ -155,8 +154,10 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
     for i in range(initial_depth, final_depth):
         result = []
         resp = depth_limited_search(rubik, i, None)
-        if (resp != 'cutoff'):
+        if resp == False:
             return resp, nodes
+        if (resp != 'cutoff'):
+            return build_path(resp, None), nodes
             
     return None, nodes
 
@@ -207,7 +208,6 @@ def build_path(a, b):
 def main():
     r = get_rubik()
     result, nodes = solve_with_IDS(r, 1, 6)
-    result = build_path(result, None)
     show_solution((result, nodes))
 
 if __name__ == '__main__':

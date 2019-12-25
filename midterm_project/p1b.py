@@ -52,22 +52,17 @@ def add_goals_to_queue(q, visited):
     - q: deque to add the goal states
     - visisted: set of the visited states
     """
-    g1 = p1a.Rubik([[[0, 0], [0, 0]], [[1, 1], [1, 1]], [[2, 2], [2, 2]], [[3, 3], [3, 3]], [[4, 4], [4, 4]], [[5, 5], [5, 5]]])
-    g2 = p1a.Rubik([[[5, 5], [5, 5]], [[0, 0], [0, 0]], [[1, 1], [1, 1]], [[2, 2], [2, 2]], [[3, 3], [3, 3]], [[4, 4], [4, 4]]])
-    g3 = p1a.Rubik([[[4, 4], [4, 4]], [[5, 5], [5, 5]], [[0, 0], [0, 0]], [[1, 1], [1, 1]], [[2, 2], [2, 2]], [[3, 3], [3, 3]]])
-    g4 = p1a.Rubik([[[3, 3], [3, 3]], [[4, 4], [4, 4]], [[5, 5], [5, 5]], [[0, 0], [0, 0]], [[1, 1], [1, 1]], [[2, 2], [2, 2]]])
-    g5 = p1a.Rubik([[[2, 2], [2, 2]], [[3, 3], [3, 3]], [[4, 4], [4, 4]], [[5, 5], [5, 5]], [[0, 0], [0, 0]], [[1, 1], [1, 1]]])
-    g6 = p1a.Rubik([[[1, 1], [1, 1]], [[2, 2], [2, 2]], [[3, 3], [3, 3]], [[4, 4], [4, 4]], [[5, 5], [5, 5]], [[0, 0], [0, 0]]])
-    visited.add(g1)
-    visited.add(g2)
-    visited.add(g3)
-    visited.add(g4)
-    visited.add(g5)
-    visited.add(g6)
-    q.append(g1)
-    q.append(g2)
-    q.append(g3)
-    q.append(g4)
-    q.append(g5)
-    q.append(g6)
-    
+    g = p1a.Rubik([[[0, 0], [0, 0]], [[1, 1], [1, 1]], [[2, 2], [2, 2]], [[3, 3], [3, 3]], [[4, 4], [4, 4]], [[5, 5], [5, 5]]])
+
+    for i in range(6):
+        for j in range(4):
+            visited.add(g)
+            q.append(g)
+            g = g.move(2, False).move(5, True)
+        
+        if i <= 3:
+            g = g.move(0, False).move(4, True)
+        if i == 3:
+            g = g.move(3, True).move(1, False)
+        if i == 4:
+            g = g.move(3, True).move(3, True).move(1, False).move(1, False)

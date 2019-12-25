@@ -10,6 +10,9 @@ class Rubik:
         self.num_faces = len(initial_state)
         self.dim = len(initial_state[0])
         self.state = copy.deepcopy(initial_state)
+        
+        x = tuple(chain.from_iterable(chain.from_iterable(self.state)))
+        self.hashed = hash(x)
     
     def move(self, side, clockwise):
         """
@@ -94,8 +97,7 @@ class Rubik:
         return value.state == self.state
 
     def __hash__(self):
-        x = list(chain.from_iterable(chain.from_iterable(self.state)))
-        return hash(x)
+        return self.hashed
       
 def solve_with_IDS(rubik, initial_depth, final_depth):
     

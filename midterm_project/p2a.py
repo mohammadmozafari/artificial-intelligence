@@ -1,4 +1,5 @@
 import random as rnd
+import copy
 
 num_province = 30
 
@@ -75,5 +76,28 @@ class Genetic:
             parents.append(j)
         return parents
 
-    
-
+    def new_generation(self, parents):
+        """
+        This function takes the selected parents and creates a number of new chromosomes.
+        The number of children equals the size of the original population.
+        Inputs
+        - parents: a list containing the index of the parent chromosomes
+        """
+        children = []
+        for i in range(self.size):
+            x = rnd.randint(0, len(parents) - 1)
+            y = rnd.randint(0, len(parents) - 1)
+            children.append(self.crossover(x, y))
+        
+    def crossover(self, x, y):
+        """
+        This function takes two parents and creates a child from them.
+        Inputs
+        - x: index of the first chromosome
+        - y: index of the second chromosome
+        """
+        child = copy.deepcopy(self.population[x])
+        mask = [rnd.uniform(0, 1) for i in range(self.length)]
+        for i in range(self.length):
+            if mask[i] > 0.5:
+                child[i] = self.population[y][i]

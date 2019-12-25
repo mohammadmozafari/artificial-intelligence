@@ -54,3 +54,26 @@ class Genetic:
                 f += self.delta(i, j, chrom)
         f /= self.graph.num_edges
         return f
+
+    def selection(self, k):
+        """
+        This function takes k member and selects the best one according to their fitness value.
+        The number of the tornuments depends on the population size and k and equals size/k
+        """
+        parents = []
+        torns = self.size // k
+        for i in range(torns):
+            candids = [rnd.randint(0, self.size - 1) for j in range(k)]
+            chosen = None
+            max_fitness = -1.0
+            for j in range(k):
+                fit = self.fitness(candids[j])
+                if fit > max_fitness:
+                    max_fitness = fit
+                    chosen = j
+            
+            parents.append(j)
+        return parents
+
+    
+

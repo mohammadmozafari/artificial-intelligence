@@ -17,10 +17,18 @@ def a_star(rubik):
         nodes.change_in_mem(-1)
         nodes.change_expanded(1)
         if x.goal_test():
-            return x, nodes
+            return (build_path(x, None), nodes)
         for action in actions:
             heapq.heappush(heap, x.move(*action))
             nodes.change_generated(1)
 
     return False, nodes
 
+
+def main():
+    r = get_rubik()
+    result, nodes = a_star(r)
+    show_solution((result, nodes))
+
+if __name__ == '__main__':
+    main()

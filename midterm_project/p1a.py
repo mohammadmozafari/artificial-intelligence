@@ -2,16 +2,16 @@ import copy
 from itertools import chain
 
 class NodeCount:
-    self.generated_nodes = 0
-    self.expanded_nodes = 0
-    self.in_memory = 0
-    self.max_in_mem = 0
+    generated_nodes = 0
+    expanded_nodes = 0
+    in_memory = 0
+    max_in_mem = 0
 
     def change_generated(self, count):
-        self.increase_generated += count
+        self.generated_nodes += count
     
     def change_expanded(self, count):
-        self.change_expanded += count
+        self.expanded_nodes += count
 
     def change_in_mem(self, count):
         self.in_memory += count
@@ -22,12 +22,13 @@ class Rubik:
     """
     This class represents one instance of rubik puzzle.
     """
-
-    def __init__(self, initial_state, father_move=None):
+    def __init__(self, initial_state, parent, parent_move=None):
         self.num_faces = len(initial_state)
         self.dim = len(initial_state[0])
         self.state = copy.deepcopy(initial_state)
-        self.fatcher_move = father_move
+        self.parent = parent
+        self.parent_move = parent_move
+
         x = tuple(chain.from_iterable(chain.from_iterable(self.state)))
         self.hashed = hash(x)
     
@@ -76,7 +77,7 @@ class Rubik:
         self.rotate_surface(new_rubik, num, count)
         self.rotate_perimeter(new_rubik, idx, 2 * count)
         cw = True if count == 1 else False
-        return Rubik(new_rubik, (num, cw))
+        return Rubik(new_rubik, self, (num, cw))
 
     def rotate_surface(self, rubik, surface_num, count):
         """
@@ -122,37 +123,30 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
     
     # TODO: random selection between actions
     actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
-    
-    generated_nodes, expanded_nodes, max_in_memory, in_memory = 0, 0, 0, 0
+    nodes = NodeCount()
+
     def depth_limited_search(rubik, limit, move):
 
-        nonlocal generated_nodes, expanded_nodes, max_in_memory, in_memory
+        nonlocal nodes
         if rubik.goal_test():
-            if move != None:
-                result.append(move)
-            return True
+            return rubik
         elif limit == 0:
             return 'cutoff'
         else:
             cut = False
             for action in actions:
-                
-                generated_nodes += 1    # a node is generated
-                expanded_nodes += 1     # a node is expanded
-                in_memory += 1          # a new node in memory
-                if in_memory > max_in_memory:
-                    max_in_memory = in_memory
-                
+                nodes.change_generated(1)
+                nodes.change_expanded(1)
+                nodes.change_in_mem(1)
+            
                 child = rubik.move(action[0], action[1])
                 resp = depth_limited_search(child, limit - 1, action)
-
-                in_memory -= 1
+                nodes.change_in_mem(-1)
+                
                 if resp == 'cutoff':
                     cut = True
                 elif resp != False:
-                    if move != None:
-                        result.append(move)
-                    return True
+                    return resp
             if cut:
                 return 'cutoff'
             else:
@@ -161,15 +155,18 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
     for i in range(initial_depth, final_depth):
         result = []
         resp = depth_limited_search(rubik, i, None)
-        if resp != 'cutoff':
-            return result[::-1], generated_nodes, expanded_nodes, max_in_memory
-    
-    return None, generated_nodes, expanded_nodes, max_in_memory
+        if (resp != 'cutoff'):
+            return resp, nodes
+            
+    return None, nodes
 
 def show_solution(result):
     if result[0] == None:
         print()
         print('no solution found until the specified depth')
+    elif result[0] == False:
+        print()
+        print('no solution exists')
     else:
         for i, move in enumerate(result[0]):
             print('move ' + str(i + 1) + ': face ' + str(move[0] + 1), end=' ')
@@ -180,9 +177,9 @@ def show_solution(result):
         print()
         print('solution found with ' + str(len(result[0])) + ' moves')
         
-    print('number of nodes generated: ' + str(result[1]))
-    print('number of nodes expanded: ' + str(result[2]))
-    print('maximum number of nodes in memory: ' + str(result[3]))
+    print('number of nodes generated: ' + str(result[1].generated_nodes))
+    print('number of nodes expanded: ' + str(result[1].expanded_nodes))
+    print('maximum number of nodes in memory: ' + str(result[1].max_in_mem))
     print('----------------------------------------------------')
 
 def get_rubik():
@@ -192,12 +189,26 @@ def get_rubik():
         face = input()
         face = face.split(' ')
         s[i][0][0], s[i][0][1], s[i][1][0], s[i][1][1] = int(face[0]) - 1, int(face[1]) - 1, int(face[2]) - 1, int(face[3]) - 1
-    return Rubik(s)
+    return Rubik(s, None, None)
+
+def build_path(a, b):
+    path = []
+    x = a
+    while (x != None) and (x.parent != None):
+        path.append(x.parent_move)
+        x = x.parent
+    path = path[::-1]
+    x = b
+    while (x != None) and (x.parent != None):
+        path.append(x.parent_move)
+        x = x.parent
+    return path
 
 def main():
     r = get_rubik()
-    result = solve_with_IDS(r, 1, 6)
-    show_solution(result)
+    result, nodes = solve_with_IDS(r, 1, 6)
+    result = build_path(result, None)
+    show_solution((result, nodes))
 
 if __name__ == '__main__':
     main()

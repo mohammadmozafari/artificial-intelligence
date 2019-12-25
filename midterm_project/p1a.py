@@ -1,16 +1,33 @@
 import copy
 from itertools import chain
 
+class NodeCount:
+    self.generated_nodes = 0
+    self.expanded_nodes = 0
+    self.in_memory = 0
+    self.max_in_mem = 0
+
+    def change_generated(self, count):
+        self.increase_generated += count
+    
+    def change_expanded(self, count):
+        self.change_expanded += count
+
+    def change_in_mem(self, count):
+        self.in_memory += count
+        if self.in_memory > self.max_in_mem:
+            self.max_in_mem = self.in_memory
+
 class Rubik:
     """
     This class represents one instance of rubik puzzle.
     """
 
-    def __init__(self, initial_state):
+    def __init__(self, initial_state, father_move=None):
         self.num_faces = len(initial_state)
         self.dim = len(initial_state[0])
         self.state = copy.deepcopy(initial_state)
-        
+        self.fatcher_move = father_move
         x = tuple(chain.from_iterable(chain.from_iterable(self.state)))
         self.hashed = hash(x)
     
@@ -58,7 +75,8 @@ class Rubik:
         new_rubik = copy.deepcopy(self.state)
         self.rotate_surface(new_rubik, num, count)
         self.rotate_perimeter(new_rubik, idx, 2 * count)
-        return Rubik(new_rubik)
+        cw = True if count == 1 else False
+        return Rubik(new_rubik, (num, cw))
 
     def rotate_surface(self, rubik, surface_num, count):
         """
@@ -98,7 +116,8 @@ class Rubik:
 
     def __hash__(self):
         return self.hashed
-      
+
+# TODO: modify this to use parent node for path creation      
 def solve_with_IDS(rubik, initial_depth, final_depth):
     
     # TODO: random selection between actions

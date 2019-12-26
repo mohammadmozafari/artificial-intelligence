@@ -47,6 +47,7 @@ class Genetic:
             return 1
         return 0
 
+    # TODO: optimize this. better if we use adjacency list.
     def fitness(self, chrom):
         """
         This function computes the fitness value for a given chromosome.
@@ -54,7 +55,8 @@ class Genetic:
         f = 0.0
         for i in range(self.length):
             for j in range(self.length):
-                f += self.delta(i, j, chrom)
+                if self.graph.matrix[i][j] == 1:
+                    f += self.delta(i, j, chrom)
         f /= self.graph.num_edges
         return f
 
@@ -125,4 +127,4 @@ class Genetic:
             parents = self.selection(k)
             self.new_generation(parents)
             self.mutation(mutation_rate)
-            
+

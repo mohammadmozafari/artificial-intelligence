@@ -9,10 +9,12 @@ class SimulatedAnealing:
     To use this we fist have to initialize it using the constructor.
     Then we can call exec method witch executes the algorithm for the given number of iterations.
     """
-    def __init__(self, graph, state, schedule):
+    def __init__(self, graph, state, schedule, T0, alpha):
         self.state = state
         self.graph = graph
         self.schedule = schedule
+        self.T0 = T0 * 1.0
+        self.alpha = alpha * 1.0
         
     def exec(self, count):
         """
@@ -20,7 +22,7 @@ class SimulatedAnealing:
         on their fitness value.
         """
         for t in range(count):
-            T = self.schedule(t)
+            T = self.schedule(self.T0, self.alpha, t)
             if T == 0:
                 return self.state
             
@@ -44,3 +46,19 @@ class SimulatedAnealing:
                     self_state = successor
             
         return self.state
+
+def mapping_1(T0, alpha, t):
+    T = T0 * math.pow(alpha, t)
+    return T
+
+def mapping_2(T0, alpha, t):
+    T = (T0) / (1 + alpha * math.log10(1 + t))
+    return T
+
+def mapping_3(T0, alpha, t):
+    T = (T0) / (1 + alpha * t)
+    return T
+
+def mapping_4(T0, alpha, t):
+    T = (T0) / (1 + alpha * t * t)
+    return T

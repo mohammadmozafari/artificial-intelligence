@@ -30,8 +30,9 @@ class Rubik:
         self.state = np.copy(initial_state)
         self.parent = parent
         self.parent_move = parent_move
+        self.alg = alg
         
-        if alg == 2:
+        if alg >= 2:
             self.hashed = hash(str(self.state))
         if alg == 3:
             self.H = self.calculateH()
@@ -77,7 +78,7 @@ class Rubik:
         self.rotate_surface(new_rubik, num, count)
         self.rotate_perimeter(new_rubik, idx, 2 * count)
         cw = True if count == 1 else False
-        return Rubik(new_rubik, self, (num, cw))
+        return Rubik(new_rubik, self, (num, cw), alg=self.alg)
 
     def rotate_surface(self, rubik, surface_num, count):
         """
@@ -105,13 +106,13 @@ class Rubik:
         """
         x = 0
         for i in range(self.num_faces):
-            unique = self.num_faces[i].unique().shape[0]
-            if unique == 2:
+            un = np.unique(self.state[i]).shape[0]
+            if un == 2:
                 x += 1
-            elif unique == 3:
+            elif un == 3:
                 x += 2
             else:
-                x += 3
+                x += 4
         return x
 
     def __eq__(self, value):
@@ -211,7 +212,7 @@ def show_solution(result):
     print('maximum number of nodes in memory: ' + str(result[1].max_in_mem))
     print('----------------------------------------------------')
 
-def get_rubik():
+def get_rubik(alg):
     """
     This is a utility function for taking a rubik puzzle from input.
     """
@@ -225,7 +226,7 @@ def get_rubik():
         face = input()
         face = face.split(' ')
         s[i, 0], s[i, 1], s[i, 3], s[i, 2] = int(face[0]) - 1, int(face[1]) - 1, int(face[2]) - 1, int(face[3]) - 1
-    return Rubik(s, None, None)
+    return Rubik(s, alg=alg)
 
 def build_path(a, b):
     """
@@ -244,7 +245,7 @@ def build_path(a, b):
     return path
 
 def main():
-    r = get_rubik()
+    r = get_rubik(1)
     result, nodes = solve_with_IDS(r, 1, 6)
     show_solution((result, nodes))
 

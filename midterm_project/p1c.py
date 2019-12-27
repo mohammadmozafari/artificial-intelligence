@@ -2,16 +2,13 @@ import heapq
 from p1a import *
 
 def a_star(rubik):
-    
     nodes = NodeCount()
+    actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
     heap = []
     heapq.heapify(heap)
     heapq.heappush(heap, rubik)
-
-    actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
     nodes.change_generated(1)
     nodes.change_in_mem(1)
-
     while len(heap) != 0:
         x = heapq.heappop(heap)
         nodes.change_in_mem(-1)
@@ -26,7 +23,7 @@ def a_star(rubik):
 
 
 def main():
-    r = get_rubik()
+    r = get_rubik(3)
     result, nodes = a_star(r)
     show_solution((result, nodes))
 

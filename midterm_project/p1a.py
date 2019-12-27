@@ -111,9 +111,15 @@ class Rubik:
                 x += 1
             elif un == 3:
                 x += 2
-            else:
+            elif un == 4:
                 x += 4
         return x
+
+    def __str__(self):
+        st = ''
+        for i in range(self.num_faces):
+            st += str(self.state[i][0] + 1) + ' ' + str(self.state[i][1] + 1) + ' ' + str(self.state[i][3] + 1) +  ' ' + str(self.state[i][2] + 1) + '\n'
+        return st
 
     def __eq__(self, value):
         """

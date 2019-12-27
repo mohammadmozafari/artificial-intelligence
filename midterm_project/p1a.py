@@ -170,9 +170,9 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
             return 'cutoff'
         else:
             cut = False
+            nodes.change_expanded(1)
             for action in actions:
                 nodes.change_generated(1)
-                nodes.change_expanded(1)
                 nodes.change_in_mem(1)
             
                 child = rubik.move(action[0], action[1])

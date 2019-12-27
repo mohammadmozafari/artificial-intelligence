@@ -1,5 +1,6 @@
 import copy
 import numpy as np
+import random as rnd
 from itertools import chain
 
 class NodeCount:
@@ -58,7 +59,6 @@ class Rubik:
         elif side == 5:
             return self.rotate(((0, 0, 1, 1, 4, 4, 3, 3), (1, 0, 0, 3, 3, 2, 2, 1)), side, cw)
 
-    # TODO: optimize this
     def goal_test(self):
         """
         This function checks whether we are in final state or not.
@@ -103,16 +103,16 @@ class Rubik:
         """
         This function calculates the H value for the current rubik state
         """
-        ls = [0, 0, 0]
+        x = 0
         for i in range(self.num_faces):
-            temp_set = set()
-            for j in range(self.dim):
-                for k in range(self.dim):
-                    temp_set.add(self.state[i, j, k])
-            if len(temp_set) == 1:
-                continue
-            ls[len(temp_set) - 2] += 1
-        return ls[0] + ls[1] * 2 + ls[2] * 4
+            unique = self.num_faces[i].unique().shape[0]
+            if unique == 2:
+                x += 1
+            elif unique == 3:
+                x += 2
+            else:
+                x += 3
+        return x
 
     def __eq__(self, value):
         """
@@ -120,7 +120,7 @@ class Rubik:
         """
         if not type(value) is Rubik:
             return False
-        return value.state == self.state
+        return np.array_equal(value.state, self.state)
 
     def __hash__(self):
         """
@@ -144,12 +144,10 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
     - initial_depth: left range of the limit
     - final_depth: right range of the limit
     """
-    # TODO: random selection between actions
     actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
     nodes = NodeCount()
 
     def depth_limited_search(rubik, limit, move):
-
         nonlocal nodes
         if rubik.goal_test():
             return rubik
@@ -158,10 +156,13 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
         else:
             cut = False
             nodes.change_expanded(1)
-            for action in actions:
+            acopy = actions.copy()
+            rnd.shuffle(acopy)
+            for action in acopy:
+                if (rubik.parent != None) and (rubik.parent_move[0] == acopy[0]) and (rubik.parent_move[1] != acopy[1]):
+                    continue
                 nodes.change_generated(1)
                 nodes.change_in_mem(1)
-            
                 child = rubik.move(action[0], action[1])
                 resp = depth_limited_search(child, limit - 1, action)
                 nodes.change_in_mem(-1)

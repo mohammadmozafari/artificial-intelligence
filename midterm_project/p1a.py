@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 from itertools import chain
 
 class NodeCount:
@@ -22,17 +23,18 @@ class Rubik:
     """
     This class represents one instance of rubik puzzle.
     """
-    def __init__(self, initial_state, parent=None, parent_move=None):
-        self.num_faces = len(initial_state)
-        self.dim = len(initial_state[0])
-        self.state = copy.deepcopy(initial_state)
+    def __init__(self, initial_state, parent=None, parent_move=None, alg=1):
+        self.num_faces = initial_state.shape[0]
+        self.dim = initial_state.shape[1]
+        self.state = np.copy(initial_state)
         self.parent = parent
         self.parent_move = parent_move
-        self.H = self.calculateH()
-        self.G = 0 if parent == None else (parent.G + 1)
-
-        x = tuple(chain.from_iterable(chain.from_iterable(self.state)))
-        self.hashed = hash(x)
+        
+        if alg == 2:
+            self.hashed = hash(str(self.state))
+        if alg == 3:
+            self.H = self.calculateH()
+            self.G = 0 if parent == None else (parent.G + 1)
     
     def move(self, side, clockwise):
         """
@@ -41,32 +43,28 @@ class Rubik:
         - side: the number of the face to be rotated
         - clockwise: if True then the rotation is clockwise
         """
+        s = self.state
         cw = 1 if clockwise else 3
         if side == 0:
-            return self.rotate([(5, 1, 0), (5, 1, 1), (3, 0, 1), (3, 0, 0), (2, 0, 1), (2, 0, 0), (1, 0, 1), (1, 0, 0)], side, cw)
+            return self.rotate(((5, 5, 3, 3, 2, 2, 1, 1), (3, 2, 1, 0, 1, 0, 1, 0)), side, cw)
         elif side == 1:
-            return self.rotate([(0, 0, 0), (0, 1, 0), (2, 0, 0), (2, 1, 0), (4, 0, 0), (4, 1, 0), (5, 0, 0), (5, 1, 0)], side, cw)
+            return self.rotate(((0, 0, 2, 2, 4, 4, 5, 5), (0, 3, 0, 3, 0, 3, 0, 3)), side, cw)
         elif side == 2:
-            return self.rotate([(0, 1, 0), (0, 1, 1), (3, 0, 0), (3, 1, 0), (4, 0, 1), (4, 0, 0), (1, 1, 1), (1, 0, 1)], side, cw)
+            return self.rotate(((0, 0, 3, 3, 4, 4, 1, 1), (3, 2, 0, 3, 1, 0, 2, 1)), side, cw)
         elif side == 3:
-            return self.rotate([(5, 1, 1), (5, 0, 1), (4, 1, 1), (4, 0, 1), (2, 1, 1), (2, 0, 1), (0, 1, 1), (0, 0, 1)], side, cw)
+            return self.rotate(((5, 5, 4, 4, 2, 2, 0, 0), (2, 1, 2, 1, 2, 1, 2, 1)), side, cw)
         elif side == 4:
-            return self.rotate([(1, 1, 0), (1, 1, 1), (2, 1, 0), (2, 1, 1), (3, 1, 0), (3, 1, 1), (5, 0, 1), (5, 0, 0)], side, cw)
+            return self.rotate(((1, 1, 2, 2, 3, 3, 5, 5), (3, 2, 3, 2, 3, 2, 1, 0)), side, cw)
         elif side == 5:
-            return self.rotate([(0, 0, 1), (0, 0, 0), (1, 0, 0), (1, 1, 0), (4, 1, 0), (4, 1, 1), (3, 1, 1), (3, 0, 1)], side, cw)
+            return self.rotate(((0, 0, 1, 1, 4, 4, 3, 3), (1, 0, 0, 3, 3, 2, 2, 1)), side, cw)
 
     # TODO: optimize this
     def goal_test(self):
         """
         This function checks whether we are in final state or not.
         """
-        for i in range(self.num_faces):
-            for j in range(self.dim):
-                for k in range(self.dim):
-                    if not self.state[i][0][0] == self.state[i][j][k]:
-                        return False
-        x = list(chain.from_iterable(chain.from_iterable(self.state)))
-        return True if len(set(x)) == 6 else False
+        result = np.sum(np.std(self.state, axis=1))
+        return True if result == 0 else False
 
     def rotate(self, idx, num, count):
         """
@@ -75,7 +73,7 @@ class Rubik:
         - num: number of the surface to be rotated
         - count: number of times to perform rotation
         """
-        new_rubik = copy.deepcopy(self.state)
+        new_rubik = np.copy(self.state)
         self.rotate_surface(new_rubik, num, count)
         self.rotate_perimeter(new_rubik, idx, 2 * count)
         cw = True if count == 1 else False
@@ -88,15 +86,7 @@ class Rubik:
         - surface: number of the surface to be rotated
         - count: number of times to rotate the surface
         """
-        N = self.dim
-        for x in range(count):
-            for i in range(N // 2):
-                for j in range(i, N - i - 1):
-                    temp = rubik[surface_num][i][j]
-                    rubik[surface_num][i][j] = rubik[surface_num][N - 1 - j][i]
-                    rubik[surface_num][N - 1 - j][i] = rubik[surface_num][N - 1 - i][N - 1 - j]
-                    rubik[surface_num][N - 1 - i][N - 1 - j] = rubik[surface_num][j][N - 1 - i]
-                    rubik[surface_num][j][N - 1 - i] = temp
+        rubik[surface_num, :count], rubik[surface_num, count:] = rubik[surface_num, -count:].copy(), rubik[surface_num, :-count].copy()
 
     def rotate_perimeter(self, rubik, idx, count):
         """
@@ -105,12 +95,9 @@ class Rubik:
         - idx: address of the pieces to be rotated
         - count: number of times to rotate
         """
-        rotated_list = []
-        for (x, y, z) in idx:
-            rotated_list.append(rubik[x][y][z])
-        rotated_list = rotated_list[-count:] + rotated_list[:-count]
-        for i, (x, y, z) in enumerate(idx):
-            rubik[x][y][z] = rotated_list[i]
+        x = idx[0][-count:] + idx[0][:-count]
+        y = idx[1][-count:] + idx[1][:-count]
+        rubik[idx] = rubik[(x, y)].copy()
 
     def calculateH(self):
         """
@@ -121,7 +108,7 @@ class Rubik:
             temp_set = set()
             for j in range(self.dim):
                 for k in range(self.dim):
-                    temp_set.add(self.state[i][j][k])
+                    temp_set.add(self.state[i, j, k])
             if len(temp_set) == 1:
                 continue
             ls[len(temp_set) - 2] += 1
@@ -227,12 +214,16 @@ def get_rubik():
     """
     This is a utility function for taking a rubik puzzle from input.
     """
-    s = [[[0, 0], [0, 0]],  [[1, 1], [1, 1]], [[2, 2], [2, 2]],
-          [[3, 3], [3, 3]], [[4, 4], [4, 4]], [[5, 5], [5, 5]]]
+    s = np.array([[0, 0, 0, 0],
+                  [1, 1, 1, 1],
+                  [2, 2, 2, 2],
+                  [3, 3, 3, 3],
+                  [4, 4, 4, 4],
+                  [5, 5, 5, 5]])
     for i in range(6):
         face = input()
         face = face.split(' ')
-        s[i][0][0], s[i][0][1], s[i][1][0], s[i][1][1] = int(face[0]) - 1, int(face[1]) - 1, int(face[2]) - 1, int(face[3]) - 1
+        s[i, 0], s[i, 1], s[i, 3], s[i, 2] = int(face[0]) - 1, int(face[1]) - 1, int(face[2]) - 1, int(face[3]) - 1
     return Rubik(s, None, None)
 
 def build_path(a, b):

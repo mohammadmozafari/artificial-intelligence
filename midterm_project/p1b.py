@@ -16,8 +16,7 @@ def bidirectional_search(rubik):
 
     nodes.change_generated(len(q1) + len(q2))
     nodes.change_in_mem(len(q1) + len(q2))
-    intersect = (None, None)    
-    actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
+    intersect = (None, None)
 
     while (len(q1) != 0) and (len(q2) != 0):
         if (len(q1) != 0):
@@ -27,14 +26,14 @@ def bidirectional_search(rubik):
                 intersect = (x, None)
                 break
             brk = False
-            for i in q2:
-                if i == x:
-                    intersect = (x, i)
-                    brk = True
-                    break
-            if brk:
+            try:
+                i = q2.index(x)
+                intersect = (x, q2[i])
                 break
+            except:
+                pass
             nodes.change_expanded(1)
+            actions = Rubik.get_all_actions()
             for action in actions:
                 xprime = x.move(action[0], action[1])
                 if not (xprime in visited1):
@@ -49,14 +48,12 @@ def bidirectional_search(rubik):
             if xprime == rubik:
                 intersect = (None, xprime)
                 break
-            brk = False
-            for i in q2:
-                if i == xprime:
-                    intersect = (x, i)
-                    brk = True
-                    break
-            if brk:
+            try:
+                i = q1.index(xprime)
+                intersect = (q1[i], xprime)
                 break
+            except:
+                pass
             nodes.change_expanded(1)
             for action in actions:
                 x = xprime.move(action[0], action[1])
@@ -92,7 +89,6 @@ def add_goals_to_queue(q, visited):
             g = g.move(2, False).move(5, True)
             g.parent = None
             g.parent_move = None
-        
         if i <= 3:
             g = g.move(0, False).move(4, True)
         if i == 3:

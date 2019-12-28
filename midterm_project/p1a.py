@@ -115,6 +115,18 @@ class Rubik:
                 x += 4
         return x
 
+    @staticmethod
+    def get_actions():
+        actions = [(0, False), (1, False), (2, True), (3, True), (4, True), (5, False)]
+        rnd.shuffle(actions)
+        return actions
+
+    @staticmethod
+    def get_all_actions():
+        actions = [(0, False), (0, True), (1, False), (1, True), (2, False), (2, True), (3, False), (3, True), (4, False), (4, True), (5, False), (5, True)]
+        rnd.shuffle(actions)
+        return actions
+
     def __str__(self):
         st = ''
         for i in range(self.num_faces):
@@ -151,9 +163,8 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
     - initial_depth: left range of the limit
     - final_depth: right range of the limit
     """
-    actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
     nodes = NodeCount()
-
+    
     def depth_limited_search(rubik, limit, move):
         nonlocal nodes
         if rubik.goal_test():
@@ -163,17 +174,13 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
         else:
             cut = False
             nodes.change_expanded(1)
-            acopy = actions.copy()
-            rnd.shuffle(acopy)
-            for action in acopy:
-                if (rubik.parent != None) and (rubik.parent_move[0] == acopy[0]) and (rubik.parent_move[1] != acopy[1]):
-                    continue
+            actions = Rubik.get_actions()
+            for action in actions:
                 nodes.change_generated(1)
                 nodes.change_in_mem(1)
                 child = rubik.move(action[0], action[1])
                 resp = depth_limited_search(child, limit - 1, action)
                 nodes.change_in_mem(-1)
-                
                 if resp == 'cutoff':
                     cut = True
                 elif resp != False:
@@ -190,7 +197,7 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
             return resp, nodes
         if (resp != 'cutoff'):
             return build_path(resp, None), nodes
-            
+
     return None, nodes
 
 def show_solution(result):
@@ -252,7 +259,7 @@ def build_path(a, b):
 
 def main():
     r = get_rubik(1)
-    result, nodes = solve_with_IDS(r, 1, 6)
+    result, nodes = solve_with_IDS(r, 1, 9)
     show_solution((result, nodes))
 
 if __name__ == '__main__':

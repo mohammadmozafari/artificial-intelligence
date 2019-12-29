@@ -36,7 +36,7 @@ class Rubik:
             self.hashed = hash(str(self.state))
         if alg == 3:
             self.H = self.calculateH()
-            self.G = 0 if parent == None else (parent.G + 1)
+            self.G = 0 if parent == None else (parent.G + 5)
     
     def move(self, side, clockwise):
         """

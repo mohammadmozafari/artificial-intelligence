@@ -2,62 +2,36 @@ import random as rnd
 import copy
 from itertools import product
 
-num_province = 30
-
-class Graph:
-    def __init__(self, num, num_colors):
-        """
-        The constructor inits a graph with the given number of vertices.
-        """
-        self.graph_matrix = [[0 for j in range(num)] for i in range(i)]
-        self.colors = [0 for i in range(num)]
-        self.num_edges = 0
-        self.num_ver = num
-        self.num_colors = num_colors
-
-    def add_edge(self, x, y):
-        """
-        This method creates a connection between two given vertices.
-        """
-        self.graph_matrix[x][y] = 1
-        self.graph_matrix[y][x] = 1
-        self.num_edges += 1
-
-    def color_node(self, x, color):
-        """
-        Mark a color for the given vertex.
-        """
-        self.colors[x] = color
+graph = [
+    [1, 2, 3],
+    [0, 2],
+    [0, 1, 3],
+    [0, 2]
+]
+vers = 4
+edges = 5
 
 class Genetic:
-    def __init__(self, graph, population_size):
+    def __init__(self, graph, num_edges, population_size):
         """
         This constructor inits a model for the graph in order to solve it using genetic algorithm
         """
         self.graph = graph
         self.size = population_size
-        self.length = graph.num_ver
+        self.length = len(graph)
+        self.edges = num_edges
         self.population = [rnd.randint(1, graph.num_colors) for i in range(self.length)]
 
-    def delta(self, i, j, ch):
-        """
-        Given two indices i and j this function computes delta(i, j) as described previously.
-        """
-        if self.population[ch][i] == self.population[ch][j]:
-            return 1
-        return 0
-
-    # TODO: optimize this. better if we use adjacency list.
     def fitness(self, chrom):
         """
         This function computes the fitness value for a given chromosome.
         """
         f = 0.0
-        for i in range(self.length):
-            for j in range(self.length):
-                if self.graph.matrix[i][j] == 1:
-                    f += self.delta(i, j, chrom)
-        f /= self.graph.num_edges
+        for node, neighbors in enumerate(graph):
+            for nei in neighbors:
+                if self.population[chrom][i] == self.population[chrom][nei]:
+                    f += 1
+        f /= (2 * self.num_edges)
         return f
 
     def selection(self, k):

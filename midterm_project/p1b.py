@@ -6,12 +6,14 @@ def bidirectional_search(rubik):
     This method takes a rubik puzzle and tries to solve it using bidirectional search strategy
     """
     nodes = NodeCount()
+    temp_ls = []
     visited1 = set()
     visited2 = set()
     q1 = deque()
     q2 = deque()
     q1.append(rubik)
-    visited1.add(rubik)
+    temp_ls.append(rubik)
+    visited1.add(id(rubik))
     add_goals_to_queue(q2, visited2)
     intersect = (None, None)
     actions = Rubik.get_all_actions()
@@ -23,13 +25,13 @@ def bidirectional_search(rubik):
             x = q1.popleft()
             nodes.change_in_mem(-1)
             nodes.change_expanded(1)
-            if x in q2:
-                intersect = (x, q2[q2.index(x)])
-                break
+            for i in q2:
+                if i == x:
+                    return (build_path(x, i), nodes)
             for action in actions:
                 xprime = x.move(action[0], action[1])
                 nodes.change_generated(1)
-                if not (xprime in visited1):
+                if xprime not in visited1:
                     visited1.add(xprime)
                     q1.append(xprime)
                     nodes.change_in_mem(2)
@@ -38,13 +40,13 @@ def bidirectional_search(rubik):
             xprime = q2.popleft()
             nodes.change_in_mem(-1)
             nodes.change_expanded(1)
-            if xprime in q1:
-                intersect = (q1[q1.index(xprime)], xprime)
-                break
+            for i in q1:
+                if i == xprime:
+                    return (build_path(xprime, i), nodes)
             for action in actions:
                 x = xprime.move(action[0], action[1])
                 nodes.change_generated(1)
-                if not (x in visited2):
+                if x not in visited2:
                     visited2.add(x)
                     q2.append(x)
                     nodes.change_in_mem(2)

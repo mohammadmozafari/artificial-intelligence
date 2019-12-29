@@ -33,7 +33,7 @@ class Rubik:
         self.alg = alg
         
         if alg >= 2:
-            self.hashed = hash(str(self.state))
+            self.hashed = hash(tuple(map(tuple, self.state)))
         if alg == 3:
             self.H = self.calculateH()
             self.G = 0 if parent == None else (parent.G + 4)

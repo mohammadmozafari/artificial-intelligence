@@ -6,9 +6,6 @@ def bidirectional_search(rubik):
     This method takes a rubik puzzle and tries to solve it using bidirectional search strategy
     """
     nodes = NodeCount()
-    if rubik.goal_test():
-        return (build_path(rubik, None), nodes)
-
     visited1 = set()
     visited2 = set()
     q1 = deque()
@@ -16,64 +13,42 @@ def bidirectional_search(rubik):
     q1.append(rubik)
     visited1.add(rubik)
     add_goals_to_queue(q2, visited2)
-    nodes.change_generated(len(q1) + len(q2))
-    nodes.change_in_mem(len(q1) + len(q2))
     intersect = (None, None)
     actions = Rubik.get_all_actions()
+    nodes.change_generated(1 + len(q2))
+    nodes.change_in_mem(1 + len(q2))
 
-    while (len(q1) != 0) and (len(q2) != 0):
-        if (len(q1) != 0):
+    while q1 or q2:
+        if q1:
             x = q1.popleft()
             nodes.change_in_mem(-1)
             nodes.change_expanded(1)
+            if x in q2:
+                intersect = (x, q2[q2.index(x)])
+                break
             for action in actions:
                 xprime = x.move(action[0], action[1])
                 nodes.change_generated(1)
-                brk = False
-                if xprime.goal_test():
-                    intersect = (xprime, None)
-                    brk = True
-                    break
-                else:
-                    try:
-                        i = q2.index(xprime)
-                        intersect = (xprime, q2[i])
-                        brk = True
-                        break
-                    except:
-                        pass
-                    if not (xprime in visited1):
-                        visited1.add(xprime)
-                        q1.append(xprime)
-                        nodes.change_in_mem(2)
-            if brk: break
+                if not (xprime in visited1):
+                    visited1.add(xprime)
+                    q1.append(xprime)
+                    nodes.change_in_mem(2)
 
-        if (len(q2) != 0):
+        if q2:
             xprime = q2.popleft()
             nodes.change_in_mem(-1)
             nodes.change_expanded(1)
+            if xprime in q1:
+                intersect = (q1[q1.index(xprime)], xprime)
+                break
             for action in actions:
                 x = xprime.move(action[0], action[1])
                 nodes.change_generated(1)
-                brk = False
-                if x == rubik:
-                    intersect = (None, x)
-                    brk = True
-                    break
-                else:
-                    try:
-                        i = q1.index(x)
-                        intersect = (q1[i], x)
-                        brk = True
-                        break
-                    except:
-                        pass
-                    if not (x in visited2):
-                        visited2.add(x)
-                        q2.append(x)
-                        nodes.change_in_mem(2)
-            if brk: break
-    
+                if not (x in visited2):
+                    visited2.add(x)
+                    q2.append(x)
+                    nodes.change_in_mem(2)
+
     if intersect == (None, None):
         return (False, nodes)
 

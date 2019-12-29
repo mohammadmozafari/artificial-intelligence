@@ -3,7 +3,7 @@ from p1a import *
 
 def a_star(rubik):
     nodes = NodeCount()
-    actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
+    actions = Rubik.get_actions()
     heap = []
     heapq.heapify(heap)
     heapq.heappush(heap, rubik)
@@ -16,6 +16,8 @@ def a_star(rubik):
         if x.goal_test():
             return (build_path(x, None), nodes)
         for action in actions:
+            if (x.parent != None) and (x.parent_move[0] == action[0]) and (x.parent_move[1] != action[1]):
+                continue
             heapq.heappush(heap, x.move(*action))
             nodes.change_generated(1)
 

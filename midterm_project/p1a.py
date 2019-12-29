@@ -36,7 +36,7 @@ class Rubik:
             self.hashed = hash(str(self.state))
         if alg == 3:
             self.H = self.calculateH()
-            self.G = 0 if parent == None else (parent.G + 5)
+            self.G = 0 if parent == None else (parent.G + 4)
     
     def move(self, side, clockwise):
         """
@@ -117,14 +117,14 @@ class Rubik:
 
     @staticmethod
     def get_actions():
-        actions = [(0, False), (1, False), (2, True), (3, True), (4, True), (5, False)]
-        rnd.shuffle(actions)
+        actions = [(0, False), (0, True), (1, False), (1, True), (2, False), (2, True)]
+        # rnd.shuffle(actions)
         return actions
 
     @staticmethod
     def get_all_actions():
         actions = [(0, False), (0, True), (1, False), (1, True), (2, False), (2, True), (3, False), (3, True), (4, False), (4, True), (5, False), (5, True)]
-        rnd.shuffle(actions)
+        # rnd.shuffle(actions)
         return actions
 
     def __str__(self):
@@ -176,6 +176,9 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
             nodes.change_expanded(1)
             actions = Rubik.get_actions()
             for action in actions:
+                if (rubik.parent != None) and (rubik.parent_move[0] == action[0]) and (rubik.parent_move[1] != action[1]):
+                    continue
+
                 nodes.change_generated(1)
                 nodes.change_in_mem(1)
                 child = rubik.move(action[0], action[1])

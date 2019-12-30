@@ -20,6 +20,7 @@ def a_star(rubik):
                 continue
             heapq.heappush(heap, x.move(*action))
             nodes.change_generated(1)
+            nodes.change_in_mem(1)
 
     return False, nodes
 

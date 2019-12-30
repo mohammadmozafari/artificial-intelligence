@@ -33,7 +33,7 @@ class Rubik:
         self.alg = alg
         
         if alg >= 2:
-            self.hashed = hash(tuple(map(tuple, self.state)))
+            pass
         if alg == 3:
             self.H = self.calculateH()
             self.G = 0 if parent == None else (parent.G + 4)
@@ -123,9 +123,19 @@ class Rubik:
 
     @staticmethod
     def get_all_actions():
-        actions = [(0, False), (0, True), (1, False), (1, True), (2, False), (2, True), (3, False), (3, True), (4, False), (4, True), (5, False), (5, True)]
+        actions = [(0, True), (0, False), (1, True), (1, False), (2, True), (2, False), (3, True), (3, False), (4, True), (4, False), (5, True), (5, False)]
         # rnd.shuffle(actions)
         return actions
+
+    @staticmethod
+    def get_goal(alg):
+        g = Rubik(np.array([[0, 0, 0, 0],
+                            [1, 1, 1, 1],
+                            [2, 2, 2, 2],
+                            [3, 3, 3, 3],
+                            [4, 4, 4, 4],
+                            [5, 5, 5, 5]]), alg=alg)
+        return g
 
     def __str__(self):
         st = ''
@@ -145,7 +155,7 @@ class Rubik:
         """
         Returns the hash value for the current object
         """
-        return self.hashed
+        return hash(tuple(self.state.reshape(24)))
 
     def __lt__(self, other):
         """

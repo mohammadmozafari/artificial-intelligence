@@ -33,11 +33,6 @@ class Rubik:
         # self.alg = alg
         self.H = self.calculateH()
         self.G = 0 if parent == None else (parent.G + 4)
-        
-        # if alg >= 2:
-        #     pass
-        # if alg == 3:
-            
     
     def move(self, side, clockwise):
         """

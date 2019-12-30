@@ -24,7 +24,6 @@ def a_star(rubik):
 
     return False, nodes
 
-
 def main():
     r = get_rubik()
     result, nodes = a_star(r)

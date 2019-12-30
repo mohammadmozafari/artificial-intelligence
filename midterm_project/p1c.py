@@ -26,7 +26,7 @@ def a_star(rubik):
 
 
 def main():
-    r = get_rubik(3)
+    r = get_rubik()
     result, nodes = a_star(r)
     show_solution((result, nodes))
 

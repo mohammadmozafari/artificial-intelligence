@@ -48,41 +48,9 @@ def bidirectional_search(rubik):
                     nodes.change_in_mem(2)
                     
     return (False, nodes)
-     
-# def add_goals_to_queue(q, visited):
-#     """
-#     This method adds all the goals states to the given queue.
-#     Then marks all the goal states as visited.
-#     Inputs:
-#     - q: deque to add the goal states
-#     - visisted: set of the visited states
-#     """
-#     g = Rubik(np.array([[0, 0, 0, 0],
-#                         [1, 1, 1, 1],
-#                         [2, 2, 2, 2],
-#                         [3, 3, 3, 3],
-#                         [4, 4, 4, 4],
-#                         [5, 5, 5, 5]]), alg=2)
-#     visited.add(g)
-#     q.append(g)
-    # for i in range(6):
-    #     for j in range(4):
-    #         visited.add(g)
-    #         q.append(g)
-    #         g = g.move(2, False).move(5, True)
-    #         g.parent = None
-    #         g.parent_move = None
-    #     if i <= 3:
-    #         g = g.move(0, False).move(4, True)
-    #     if i == 3:
-    #         g = g.move(3, True).move(1, False)
-    #     if i == 4:
-    #         g = g.move(3, True).move(3, True).move(1, False).move(1, False)
-    #     g.parent = None
-    #     g.parent_move = None
 
 def main():
-    r = get_rubik(2)
+    r = get_rubik()
     result, nodes = bidirectional_search(r)
     show_solution((result, nodes))
 

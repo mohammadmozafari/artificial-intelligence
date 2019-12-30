@@ -24,19 +24,20 @@ class Rubik:
     """
     This class represents one instance of rubik puzzle.
     """
-    def __init__(self, initial_state, parent=None, parent_move=None, alg=1):
+    def __init__(self, initial_state, parent=None, parent_move=None):
         self.num_faces = initial_state.shape[0]
         self.dim = initial_state.shape[1]
         self.state = np.copy(initial_state)
         self.parent = parent
         self.parent_move = parent_move
-        self.alg = alg
+        # self.alg = alg
+        self.H = self.calculateH()
+        self.G = 0 if parent == None else (parent.G + 4)
         
-        if alg >= 2:
-            pass
-        if alg == 3:
-            self.H = self.calculateH()
-            self.G = 0 if parent == None else (parent.G + 4)
+        # if alg >= 2:
+        #     pass
+        # if alg == 3:
+            
     
     def move(self, side, clockwise):
         """
@@ -78,7 +79,7 @@ class Rubik:
         self.rotate_surface(new_rubik, num, count)
         self.rotate_perimeter(new_rubik, idx, 2 * count)
         cw = True if count == 1 else False
-        return Rubik(new_rubik, self, (num, cw), alg=self.alg)
+        return Rubik(new_rubik, self, (num, cw))
 
     def rotate_surface(self, rubik, surface_num, count):
         """
@@ -134,7 +135,7 @@ class Rubik:
                             [2, 2, 2, 2],
                             [3, 3, 3, 3],
                             [4, 4, 4, 4],
-                            [5, 5, 5, 5]]), alg=alg)
+                            [5, 5, 5, 5]]))
         return g
 
     def __str__(self):
@@ -238,7 +239,7 @@ def show_solution(result):
     print('maximum number of nodes in memory: ' + str(result[1].max_in_mem))
     print('----------------------------------------------------')
 
-def get_rubik(alg):
+def get_rubik():
     """
     This is a utility function for taking a rubik puzzle from input.
     """
@@ -252,7 +253,7 @@ def get_rubik(alg):
         face = input()
         face = face.split(' ')
         s[i, 0], s[i, 1], s[i, 3], s[i, 2] = int(face[0]) - 1, int(face[1]) - 1, int(face[2]) - 1, int(face[3]) - 1
-    return Rubik(s, alg=alg)
+    return Rubik(s)
 
 def build_path(a, b):
     """
@@ -271,7 +272,7 @@ def build_path(a, b):
     return path
 
 def main():
-    r = get_rubik(1)
+    r = get_rubik()
     result, nodes = solve_with_IDS(r, 1, 9)
     show_solution((result, nodes))
 

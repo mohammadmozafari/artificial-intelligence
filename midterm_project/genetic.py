@@ -1,44 +1,7 @@
 import random as rnd
 import copy
+import matplotlib.pyplot as plt
 from itertools import product
-
-graph = [
-    [2, 7, 11, 16]
-    [2, 3, 7]
-    [0, 1, 7]
-    [1, 7, 9, 10]
-    [5, 6, 8]
-    [4, 8, 9]
-    [4, 8, 18, 22]
-    [0, 1, 2, 3, 10, 11, 14]
-    [4, 5, 6, 9, 13, 17, 18, 19]
-    [3, 5, 8, 10, 12, 13]
-    [3, 7, 9, 12, 14, 15]
-    [0, 7, 14, 16]
-    [9, 10, 13, 15]
-    [8, 9, 12, 15, 17]
-    [7, 10, 11, 15, 16, 20]
-    [10, 12, 13, 14, 17, 19, 20]
-    [0, 11, 14, 20, 21]
-    [8, 13, 15, 19]
-    [6, 8, 19, 22, 25, 26]
-    [8, 15, 17, 18, 20, 23, 24, 26, 28]
-    [14, 15, 16, 19, 21, 23]
-    [16, 20, 23]
-    [6, 18, 25, 27]
-    [19, 20, 21, 24, 26, 28, 29]
-    [19, 23, 28]
-    [18, 22, 26, 27, 30]
-    [18, 19, 23, 25, 28, 29, 30]
-    [22, 25, 30]
-    [19, 23, 24, 26, 29]
-    [23, 26, 28, 30]
-    [25, 26, 27, 29]
-    [0, 2]
-]
-vers = 4
-edges = 5
-colors = 3
 
 class Genetic:
     def __init__(self, graph, num_edges, population_size, num_colors):
@@ -49,6 +12,7 @@ class Genetic:
         self.size = population_size
         self.length = len(graph)
         self.edges = num_edges
+        self.num_colors = num_colors
         self.population = [[rnd.randint(1, num_colors) for i in range(self.length)] for i in range(population_size)]
 
     def fitness(self, chrom):
@@ -56,9 +20,9 @@ class Genetic:
         This function computes the fitness value for a given chromosome.
         """
         f = 0.0
-        for node, neighbors in enumerate(graph):
+        for node, neighbors in enumerate(self.graph):
             for nei in neighbors:
-                if self.population[chrom][node] == self.population[chrom][nei]:
+                if self.population[chrom][node] != self.population[chrom][nei]:
                     f += 1
         f /= (2 * self.edges)
         return f
@@ -74,13 +38,12 @@ class Genetic:
             candids = [rnd.randint(0, self.size - 1) for j in range(k)]
             chosen = None
             max_fitness = -1.0
-            for j in range(k):
-                fit = self.fitness(candids[j])
+            for j in candids:
+                fit = self.fitness(j)
                 if fit > max_fitness:
                     max_fitness = fit
                     chosen = j
-            
-            parents.append(j)
+            parents.append(chosen)
         return parents
 
     def new_generation(self, parents):
@@ -93,8 +56,11 @@ class Genetic:
         children = []
         for i in range(self.size):
             x = rnd.randint(0, len(parents) - 1)
-            y = rnd.randint(0, len(parents) - 1)
-            children.append(self.crossover(x, y))
+            y = 0
+            while True:
+                y = rnd.randint(0, len(parents) - 1)
+                if x != y: break
+            children.append(self.crossover(self.population[parents[x]], self.population[parents[y]]))
         self.population = children
         
     def crossover(self, x, y):
@@ -104,11 +70,11 @@ class Genetic:
         - x: index of the first chromosome
         - y: index of the second chromosome
         """
-        child = copy.deepcopy(self.population[x])
+        child = copy.deepcopy(x)
         mask = [rnd.uniform(0, 1) for i in range(self.length)]
         for i in range(self.length):
             if mask[i] > 0.5:
-                child[i] = self.population[y][i]
+                child[i] = y[i]
         return child
 
     def mutation(self, mutation_rate):
@@ -122,21 +88,80 @@ class Genetic:
         options = product(range(self.size), range(self.length))
         options = rnd.sample(list(options), mutated_genes)
         for i in range(mutated_genes):
-            self.population[options[i][0]][options[i][1]] = rnd.randint(1, self.graph.num_colors)
+            self.population[options[i][0]][options[i][1]] = rnd.randint(1, self.num_colors)
         
     def exec(self, num_iters, k, mutation_rate):
         """
         This part executes the algorithm for num_iters iterations.
         """
+        high_hist = []
+        low_hist = []
+        middle_hist = []
         for i in range(num_iters):
+            high, low, middle = self.stats()
+            high_hist.append(high)
+            low_hist.append(low)
+            middle_hist.append(middle)
             parents = self.selection(k)
             self.new_generation(parents)
             self.mutation(mutation_rate)
+        return high_hist, low_hist, middle_hist
+
+    def stats(self):
+        high, low, ave = -1, -1, 0.0
+        for i, chrom in enumerate(self.population):
+            fit = self.fitness(i)
+            ave += fit
+            if fit > high:
+                high = fit
+            if fit < low or low == -1:
+                low = fit 
+        return high, low, (ave/self.size)
+
+def get_graph():
+    ver = int(input('enter number of vertices: '))
+    graph = []
+    edges = 0
+    for i in range(ver):
+        temp_list = []
+        face = input()
+        face = face.split(' ')
+        for j in face:
+            temp_list.append(int(j))
+            edges += 1
+        graph.append(temp_list)
+
+    return graph, ver, edges // 2
+
+def show_data(high, low, middle, title):
+    plt.figure()
+    plt.title(title)
+    plt.plot(high, label='Maximum')
+    plt.plot(low, label='Minimum')
+    plt.plot(middle, label='Average')
+    plt.legend()
+    plt.savefig('C:\\Users\\Mohammad\\Desktop\\figures\\' + title + '.png')
+    print(title, 'saved.')
 
 def main():
-    gen = Genetic(graph, edges, 5, colors)
-    gen.exec(10000, 5, 0.02)
-    print(gen.population)
-    print(gen.fitness(0))
 
+    # params
+    generations = [50, 500, 5000]
+    mutation_rates = [0.01, 0.02, 0.05, 0.1]
+    population_sizes = [10, 100, 1000]
+    ks = [2, 5, 10]
+    colors = 4
+
+    graph, N, M = get_graph()
+
+    for gen in generations:
+        for mut in mutation_rates:
+            for p in population_sizes:
+                for k in ks:
+                    if p == 10 and k > 2:
+                        continue
+                    genet = Genetic(graph, M, p, colors)
+                    data = genet.exec(gen, k, mut)
+                    title = 'generations=%d, population=%d, mutation rate=%.2f, k=%d' % (gen, p, mut, k)
+                    show_data(*data, title)
 main()

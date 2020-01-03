@@ -146,22 +146,45 @@ def show_data(high, low, middle, title):
 def main():
 
     # params
-    generations = [50, 500, 5000]
-    mutation_rates = [0.01, 0.02, 0.05, 0.1]
-    population_sizes = [10, 100, 1000]
-    ks = [2, 5, 10]
+    # generations = [50, 500, 5000]
+    # mutation_rates = [0.01, 0.02, 0.05, 0.1]
+    # population_sizes = [10, 100, 1000]
+    # ks = [2, 5, 10]
+    # colors = 4
+
+    # graph, N, M = get_graph()
+
+    # for gen in generations:
+    #     for mut in mutation_rates:
+    #         for p in population_sizes:
+    #             for k in ks:
+    #                 if p == 10 and k > 2:
+    #                     continue
+    #                 genet = Genetic(graph, M, p, colors)
+    #                 data = genet.exec(gen, k, mut)
+    #                 title = 'generations=%d, population=%d, mutation rate=%.2f, k=%d' % (gen, p, mut, k)
+    #                 show_data(*data, title)
+
+    # params
+    generations = 50
+    mutation_rate = 0.01
+    population_size = 100
+    k = 5
     colors = 4
 
     graph, N, M = get_graph()
+    genet = Genetic(graph, M, population_size, colors)
+    genet.exec(generations, k, mutation_rate)
 
-    for gen in generations:
-        for mut in mutation_rates:
-            for p in population_sizes:
-                for k in ks:
-                    if p == 10 and k > 2:
-                        continue
-                    genet = Genetic(graph, M, p, colors)
-                    data = genet.exec(gen, k, mut)
-                    title = 'generations=%d, population=%d, mutation rate=%.2f, k=%d' % (gen, p, mut, k)
-                    show_data(*data, title)
+    high = -1
+    best = None
+    for i, chrom in enumerate(genet.population):
+        fit = genet.fitness(i)
+        if fit > high:
+            high = fit
+            best = chrom
+
+    print()
+    print('best coloring')        
+    print(best)
 main()

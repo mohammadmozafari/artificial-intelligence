@@ -1,7 +1,7 @@
 import heapq
-from p1a import *
+from ids import *
 
-def a_star(rubik):
+def ucs(rubik):
     nodes = NodeCount()
     actions = Rubik.get_actions()
     heap = []
@@ -26,7 +26,7 @@ def a_star(rubik):
 
 def main():
     r = get_rubik()
-    result, nodes = a_star(r)
+    result, nodes = ucs(r)
     show_solution((result, nodes))
 
 if __name__ == '__main__':

@@ -24,12 +24,13 @@ class Rubik:
     """
     This class represents one instance of rubik puzzle.
     """
-    def __init__(self, initial_state, parent=None, parent_move=None):
+    def __init__(self, initial_state, parent=None, parent_move=None, astar=False):
         self.num_faces = initial_state.shape[0]
         self.dim = initial_state.shape[1]
         self.state = np.copy(initial_state)
         self.parent = parent
         self.parent_move = parent_move
+        self.astar = astar
         # self.alg = alg
         self.H = self.calculateH()
         self.G = 0 if parent == None else (parent.G + 4)
@@ -157,9 +158,12 @@ class Rubik:
         """
         Takes another object and returns True if current object is less than the give
         """
-        f_this = self.G + self.H
-        f_other = other.G + other.H
-        return f_this < f_other
+        if self.astar:
+            f_this = self.G + self.H
+            f_other = other.G + other.H
+            return f_this < f_other
+        else:
+            return self.G < other.G
     
 def solve_with_IDS(rubik, initial_depth, final_depth):
     """
@@ -199,6 +203,8 @@ def solve_with_IDS(rubik, initial_depth, final_depth):
             else:
                 return False
 
+    nodes.change_generated(1)
+    nodes.change_in_mem(1)
     for i in range(initial_depth, final_depth):
         result = []
         resp = depth_limited_search(rubik, i, None)

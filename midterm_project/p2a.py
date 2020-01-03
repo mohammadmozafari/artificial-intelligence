@@ -3,16 +3,45 @@ import copy
 from itertools import product
 
 graph = [
-    [1, 2, 3],
-    [0, 2],
-    [0, 1, 3],
+    [2, 7, 11, 16]
+    [2, 3, 7]
+    [0, 1, 7]
+    [1, 7, 9, 10]
+    [5, 6, 8]
+    [4, 8, 9]
+    [4, 8, 18, 22]
+    [0, 1, 2, 3, 10, 11, 14]
+    [4, 5, 6, 9, 13, 17, 18, 19]
+    [3, 5, 8, 10, 12, 13]
+    [3, 7, 9, 12, 14, 15]
+    [0, 7, 14, 16]
+    [9, 10, 13, 15]
+    [8, 9, 12, 15, 17]
+    [7, 10, 11, 15, 16, 20]
+    [10, 12, 13, 14, 17, 19, 20]
+    [0, 11, 14, 20, 21]
+    [8, 13, 15, 19]
+    [6, 8, 19, 22, 25, 26]
+    [8, 15, 17, 18, 20, 23, 24, 26, 28]
+    [14, 15, 16, 19, 21, 23]
+    [16, 20, 23]
+    [6, 18, 25, 27]
+    [19, 20, 21, 24, 26, 28, 29]
+    [19, 23, 28]
+    [18, 22, 26, 27, 30]
+    [18, 19, 23, 25, 28, 29, 30]
+    [22, 25, 30]
+    [19, 23, 24, 26, 29]
+    [23, 26, 28, 30]
+    [25, 26, 27, 29]
     [0, 2]
 ]
 vers = 4
 edges = 5
+colors = 3
 
 class Genetic:
-    def __init__(self, graph, num_edges, population_size):
+    def __init__(self, graph, num_edges, population_size, num_colors):
         """
         This constructor inits a model for the graph in order to solve it using genetic algorithm
         """
@@ -20,7 +49,7 @@ class Genetic:
         self.size = population_size
         self.length = len(graph)
         self.edges = num_edges
-        self.population = [rnd.randint(1, graph.num_colors) for i in range(self.length)]
+        self.population = [[rnd.randint(1, num_colors) for i in range(self.length)] for i in range(population_size)]
 
     def fitness(self, chrom):
         """
@@ -29,9 +58,9 @@ class Genetic:
         f = 0.0
         for node, neighbors in enumerate(graph):
             for nei in neighbors:
-                if self.population[chrom][i] == self.population[chrom][nei]:
+                if self.population[chrom][node] == self.population[chrom][nei]:
                     f += 1
-        f /= (2 * self.num_edges)
+        f /= (2 * self.edges)
         return f
 
     def selection(self, k):
@@ -87,9 +116,11 @@ class Genetic:
         This function mutates some of the genes in some of the chromosomes.
         The number of genes to be mutated is computated with the following formula: (populationSize * chromosomeLength * mutaionRate) 
         """
-        mutated_genes = self.size * self.length * mutation_rate
+        mutated_genes = int(self.size * self.length * mutation_rate)
+        if mutated_genes <= 0:
+            return
         options = product(range(self.size), range(self.length))
-        options = rnd.sample(options, mutated_genes)
+        options = rnd.sample(list(options), mutated_genes)
         for i in range(mutated_genes):
             self.population[options[i][0]][options[i][1]] = rnd.randint(1, self.graph.num_colors)
         
@@ -102,3 +133,10 @@ class Genetic:
             self.new_generation(parents)
             self.mutation(mutation_rate)
 
+def main():
+    gen = Genetic(graph, edges, 5, colors)
+    gen.exec(10000, 5, 0.02)
+    print(gen.population)
+    print(gen.fitness(0))
+
+main()

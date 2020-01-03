@@ -1,5 +1,5 @@
 from collections import deque
-from p1a import *
+from ids import *
 import time
 
 def bidirectional_search(rubik):

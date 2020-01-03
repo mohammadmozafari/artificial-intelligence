@@ -187,4 +187,6 @@ def main():
     print()
     print('best coloring')        
     print(best)
-main()
+
+if __name__ == '__main__':
+    main()

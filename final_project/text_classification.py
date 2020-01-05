@@ -1,3 +1,7 @@
+import pandas as pd
+
+# TODO: linux space character used
+
 class Model:
     def __init__(self, filepath):
         pass
@@ -25,6 +29,14 @@ class Model:
 
     @staticmethod
     def save_words(source, target1, target2, say=False):
+        """
+        This utility method helps us to extract words and titles from raw text files.
+        Inputs
+        - source: the filepath for raw text
+        - target1: the filepath in which we store words
+        - target2: the filepath in which we store titles
+        - say: if true then function prints progress
+        """
         all_words = set()
         titles = set()
 
@@ -33,33 +45,70 @@ class Model:
             for (i, line) in enumerate(lines):
                 if say: print('reading line', i + 1)
                 a, b = line.split('@@@@@@@@@@')
-                
-                if a not in titles:
-                    titles.add(a)
-                words = a.split(' ')
-                for w in words:
-                    if w == ' ' or w == '' or w == '\n':
-                        continue
-                    if w not in all_words:
-                        all_words.add(w)
+                titles.add(a)
                 words = b.split(' ')
                 for w in words:
                     if w == ' ' or w == '' or w == '\n':
                         continue
-                    if w not in all_words:
-                        all_words.add(w)
+                    all_words.add(w)
         
         print(str(len(all_words)), 'words found.')
         print(str(len(titles)), 'titles found.')
         with open(target1, 'w') as f:
-            for i, w in enumerate(all_words):
-                f.write('%d-%s\n' % ((i+1), w))
-            f.write('----END----')
+            for w in all_words:
+                f.write('%s\n' % w)
+            f.write('---------- %d words.' % len(all_words))
         with open(target2, 'w') as f:
-            for i, w in enumerate(titles):
-                f.write('%d-%s\n' % ((i+1), w))
-            f.write('----END----')
+            for t in titles:
+                f.write('%s\n' % t)
+            f.write('---------- %d titles.' % len(titles))
         print('writing done.')
+
+    @staticmethod
+    def count_words_for_titles(titles_file, words_file, text_file, csv_file, say=False):
+        """
+        A utility method that goes through text file and counts the occurrence of each word
+        in its corresponding category and saves the result in a csv file.
+        Inputs:
+        - titles_file: filepath containing the titles of the texts
+        - words_file: filepath containing all words
+        - text_file: raw text file
+        - csv_file: filepath in which we store the result
+        - say: if true then function prints progress
+        """
+        titles = None
+        words_dic = {}
+        dic = None
+
+        with open(titles_file) as f:
+            titles = f.readlines()
+            titles = titles[:-1]
+        with open(words_file) as f:
+            i = 0
+            while True:
+                line = f.readline()
+                if line.startswith('--'): break
+                words_dic[line.replace('\n', '', 1)] = i
+                i += 1
+        dic = {titles[i].replace('\n', '', 1): [0 for j in range(len(words_dic))] for i in range(len(titles))}
+
+        i = 1
+        with open(text_file) as f:
+            while True:
+                if say: print('reading line', i)
+                i += 1
+                line = f.readline()
+                if len(line) < 5:
+                    break
+                a, b = line.split('@@@@@@@@@@')
+                ws = b.split(' ')
+                for w in ws:
+                    if w == ' ' or w == '' or w == '\n':
+                        continue
+                    dic[a][words_dic[w]] += 1
+        dataframe = pd.DataFrame.from_dict(dic)
+        pd.DataFrame.to_csv(dataframe, csv_file, index=False, encoding='ansi')
+        print('writing done')
 
     # @staticmethod
     # def get_titles():
@@ -68,7 +117,27 @@ class Model:
 def main():
     # this lines saves all the words and titles in seperate files
     # Model.save_words('HAM-Train.txt', 'words.txt', 'titles.txt', say=True)
+
+    # this line stores the number of word occurences in each context in a csv file
+    # Model.count_words_for_titles('titles.txt', 'words.txt', 'HAM-Train.txt', 'word_count.csv', say=True)
     pass
+
+    # dict = {'a': [1, 2, 3], 'b': [1, 2, 4]}
+    # a = pd.DataFrame.from_dict(dict)
+    # pd.DataFrame.to_csv(a, path_or_buf='test_csv.csv', index=False)
+    # print(a)
+    # a = {i:i + 1 for i in range(10)}
+    # print(a)
+
+    
+    # a = 'hello\n'
+    # b = a.replace('\n', '', 1)
+    # print(a)
+    # print(b)
+    # print(b)
+    # a = 'بزرگترین'
+    # b = 'بزرگتران'
+    # print(a == b)
 
 if __name__ == '__main__':
     main()

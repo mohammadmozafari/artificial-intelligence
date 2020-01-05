@@ -1,32 +1,11 @@
 import pandas as pd
 import json
-
-# TODO: linux space character used
+import math
 
 class Model:
-    def __init__(self, filepath):
-        pass
-        # all_data = None
-        # with open(filepath) as f:
-        #     all_data = f.readlines()
-        # title, text = all_data[0].split('@@@@@@@@@@')
-        # with open('temp.txt', 'w') as f:
-        #     f.write(all_data[2])
-        #     f.write(all_data[10])
-        # title.encode('utf-8')
-        # print(all_data)
-        # for i in title:
-            # print(int(i))
-
-        # t = 'اقتصاد'
-        # title.
-        # print(len(title))
-        # print(len(t))
-        # print(len('اقتصاد'))
-        # print(title == 'اقتصاد')
-        # print(t)
-        # print(title)
-        # print(text)
+    def __init__(self, lambda1, lambda2):
+        self.lam1 = lambda1
+        self.lam2 = lambda2
 
     @staticmethod
     def save_words(source, target1, target2, say=False):
@@ -148,6 +127,51 @@ class Model:
         with open('result.json', 'w') as fp:
             json.dump(model, fp, indent=4)
         self.model = model
+    
+    def load_model(self, json_file):
+        with open(json_file) as f:
+            self.model = json.load(f)
+
+    def test(self, text_file, say=True):
+        predictions = []
+        with open(text_file) as f:
+            lines = f.readlines()
+            for (i, line) in enumerate(lines):
+                if say: print('reading line', i + 1)
+                title, text = line.split('@@@@@@@@@@')
+                max_p = -1
+                prediction = None
+                for category in self.model:
+                    p = self.estimate_probability(text, category)
+                    print(category, ':', p)
+                    if p > max_p:
+                        max_p = p
+                        prediction = category
+                predictions.append(prediction)
+                print('correct one:', title)
+
+    def estimate_probability(self, text, category):
+        p = 0.0
+        p += self.log_p_class(category)
+        words = text.split(' ')
+        for i in range(len(words)):
+            if words[i] == ' ' or words[i] == '' or words[i] == '\n':
+                continue
+            if i == 0:
+                binary_exp = '<sos>-' + words[i]
+            else:
+                binary_exp = words[i - 1] + '-' + words[i]
+            score = self.lam1 * self.model[category][3].get(binary_exp, 0)
+            score += self.lam2 * self.model[category][2].get(words[i], 0)
+            score += 1e-5
+            p += math.log(score)
+        return p
+
+    def log_p_class(self, category):
+        all_lines = 0
+        for cat in self.model:
+            all_lines += self.model[cat][0]
+        return math.log(self.model[category][0] / all_lines)
 
 def main():
     # this lines saves all the words and titles in seperate files
@@ -155,29 +179,15 @@ def main():
 
     # this line stores the number of word occurences in each context in a csv file
     # Model.count_words_for_titles('titles.txt', 'words.txt', 'HAM-Train.txt', 'word_count.csv', say=True)
-    # a = {1: 'a', 2: 'b'}
-    # print(a.get(3, None))
 
-    x = Model('xxx')
-    x.build_model('HAM-Train.txt', True)
-    # pass
+    x = Model(0.5, 0.5)
 
-    # dict = {'a': [1, 2, 3], 'b': [1, 2, 4]}
-    # a = pd.DataFrame.from_dict(dict)
-    # pd.DataFrame.to_csv(a, path_or_buf='test_csv.csv', index=False)
-    # print(a)
-    # a = {i:i + 1 for i in range(10)}
-    # print(a)
+    # this line builds a model using data and stores the result in json file
+    # x.build_model('HAM-Train.txt', True)
 
-    
-    # a = 'hello\n'
-    # b = a.replace('\n', '', 1)
-    # print(a)
-    # print(b)
-    # print(b)
-    # a = 'بزرگترین'
-    # b = 'بزرگتران'
-    # print(a == b)
+    x.load_model('result.json')
+    # print(x.model)
+    x.test('temp.txt', say=True)
 
 if __name__ == '__main__':
     main()

@@ -129,10 +129,16 @@ class Model:
         self.model = model
     
     def load_model(self, json_file):
+        """
+        This method imports trained model from a json file into a dictionary
+        """
         with open(json_file) as f:
             self.model = json.load(f)
 
     def test(self, text_file, say=True):
+        """
+        This method tests the probablistic model on test set and returns the results
+        """
         predictions = []
         with open(text_file) as f:
             lines = f.readlines()
@@ -143,12 +149,11 @@ class Model:
                 prediction = None
                 for category in self.model:
                     p = self.estimate_probability(text, category)
-                    print(category, ':', p)
                     if p > max_p:
                         max_p = p
                         prediction = category
-                predictions.append(prediction)
-                print('correct one:', title)
+                predictions.append((title, prediction))
+        return predictions
 
     def estimate_probability(self, text, category):
         p = 0.0
@@ -173,6 +178,30 @@ class Model:
             all_lines += self.model[cat][0]
         return math.log(self.model[category][0] / all_lines)
 
+    def calculate_metrics(self, preds):
+        precision = {c: 0 for c in self.model}
+        recall = {c: 0 for c in self.model}
+        f1 = {c: 0 for c in self.model}
+
+        num_class = len(self.model)
+        tp = {c: 1e-10 for c in self.model}
+        prec_denom = {c: 1e-10 for c in self.model}
+        rec_denom = {c: 1e-10 for c in self.model}
+        for correct, guess in preds:
+            if correct == guess:
+                tp[correct] += 1
+                prec_denom[correct] += 1
+                rec_denom[correct] += 1
+            else:
+                prec_denom[guess] += 1
+                rec_denom[correct] += 1
+        
+        for c in self.model:
+            precision[c] = tp[c] / prec_denom[c]
+            recall[c] = tp[c] / rec_denom[c]
+            f1[c] = (2 * precision[c] * recall[c]) / (precision[c] + recall[c])
+        return precision, recall, f1
+
 def main():
     # this lines saves all the words and titles in seperate files
     # Model.save_words('HAM-Train.txt', 'words.txt', 'titles.txt', say=True)
@@ -180,14 +209,24 @@ def main():
     # this line stores the number of word occurences in each context in a csv file
     # Model.count_words_for_titles('titles.txt', 'words.txt', 'HAM-Train.txt', 'word_count.csv', say=True)
 
-    x = Model(0.5, 0.5)
+    model = Model(0.5, 0.5)
 
     # this line builds a model using data and stores the result in json file
     # x.build_model('HAM-Train.txt', True)
 
-    x.load_model('result.json')
+    model.load_model('result.json')
     # print(x.model)
-    x.test('temp.txt', say=True)
+    pres = model.test('HAM-Test.txt', say=True)
+    precision, recall, f1 = model.calculate_metrics(pres)
+
+    print()
+    print('=====================================')
+    for c in model.model:
+        print(c)
+        print('precision', precision[c])
+        print('recall', recall[c])
+        print('f1', f1[c])
+        print('---------------------------')
 
 if __name__ == '__main__':
     main()

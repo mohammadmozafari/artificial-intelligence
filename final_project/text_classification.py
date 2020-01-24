@@ -104,7 +104,7 @@ class Model:
                 # new paragraph
                 category = model.get(title, None)
                 if category == None:
-                    model[title] = [0, 0, {'<sos>': 0}, {}]
+                    model[title] = [0, 0, {'<sos>': 0}, {}, 1, 1]
                     category = model[title]
                 category[0] += 1
                 category[1] += 1
@@ -115,13 +115,15 @@ class Model:
                 for word in words:
                     if word == ' ' or word == '' or word == '\n':
                         continue
-                    
+
                     category_unary = category[2]
                     category_unary[word] = 1 if category_unary.get(word, None) == None else (category_unary[word] + 1)
+                    category[4] += 1
 
                     binary = previous_word + '-' + word
                     category_binary = category[3]
                     category_binary[binary] = 1 if category_binary.get(binary, None) == None else (category_binary[binary] + 1)
+                    category[5] += 1
                     
                     previous_word = word
         with open('result.json', 'w') as fp:
@@ -140,19 +142,26 @@ class Model:
         This method tests the probablistic model on test set and returns the results
         """
         predictions = []
+        true = 0
+        alll = 0
         with open(text_file) as f:
             lines = f.readlines()
             for (i, line) in enumerate(lines):
                 if say: print('reading line', i + 1)
                 title, text = line.split('@@@@@@@@@@')
-                max_p = -1
+                max_p = 1
                 prediction = None
                 for category in self.model:
                     p = self.estimate_probability(text, category)
-                    if p > max_p:
+                    if p > max_p or max_p == 1:
                         max_p = p
                         prediction = category
                 predictions.append((title, prediction))
+                alll += 1
+                if prediction == title:
+                    true += 1
+
+        print(alll, true)
         return predictions
 
     def estimate_probability(self, text, category):
@@ -166,9 +175,12 @@ class Model:
                 binary_exp = '<sos>-' + words[i]
             else:
                 binary_exp = words[i - 1] + '-' + words[i]
-            score = self.lam1 * self.model[category][3].get(binary_exp, 0)
-            score += self.lam2 * self.model[category][2].get(words[i], 0)
-            score += 1e-5
+            score = self.lam1 * (self.model[category][3].get(binary_exp, 0) * 1.0 / self.model[category][5])
+            score += self.lam2 * (self.model[category][2].get(words[i], 0) * 1.0 / self.model[category][4])
+            # score = (self.model[category][3].get(binary_exp, 0) * 1.0 / self.model[category][5])
+            # score = (self.model[category][2].get(words[i], 0) * 1.0 / self.model[category][4])
+            if score == 0:
+                score += 1e-10
             p += math.log(score)
         return p
 
@@ -183,10 +195,9 @@ class Model:
         recall = {c: 0 for c in self.model}
         f1 = {c: 0 for c in self.model}
 
-        num_class = len(self.model)
-        tp = {c: 1e-10 for c in self.model}
-        prec_denom = {c: 1e-10 for c in self.model}
-        rec_denom = {c: 1e-10 for c in self.model}
+        tp = {c: 0 for c in self.model}
+        prec_denom = {c: 0 for c in self.model}
+        rec_denom = {c: 0 for c in self.model}
         for correct, guess in preds:
             if correct == guess:
                 tp[correct] += 1
@@ -197,6 +208,10 @@ class Model:
                 rec_denom[correct] += 1
         
         for c in self.model:
+            if prec_denom[c] == 0:
+                prec_denom[c] += 1e-10
+            if rec_denom[c] == 0:
+                rec_denom[c] += 1e-10
             precision[c] = tp[c] / prec_denom[c]
             recall[c] = tp[c] / rec_denom[c]
             f1[c] = (2 * precision[c] * recall[c]) / (precision[c] + recall[c])
@@ -212,10 +227,9 @@ def main():
     model = Model(0.5, 0.5)
 
     # this line builds a model using data and stores the result in json file
-    # x.build_model('HAM-Train.txt', True)
+    # model.build_model('HAM-Train.txt', True)
 
     model.load_model('result.json')
-    # print(x.model)
     pres = model.test('HAM-Test.txt', say=True)
     precision, recall, f1 = model.calculate_metrics(pres)
 

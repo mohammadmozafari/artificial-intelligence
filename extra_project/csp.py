@@ -16,40 +16,8 @@ class CSP:
         answer = [None for i in range(self.length)]
         if (not fc) and (not mrv):
             return self.backtrack(answer, 0)
-        elif fc and (not mrv):
-            return self.backtrack_fc(answer, 0, self.domain)
-
-        # def backtrack(at, domain):
-        #     if fc:
-        #         pass
-        #     else:
-
-
-        #     my_domain = copy.deepcopy(domain)
-
-        #     for option in my_domain[at]:
-        #         answer[at] = option
-        #         my_domain[at] = [option]
-
-        #         if fc:
-        #             empty = self.check(answer, at, my_domain)
-        #             if empty:
-        #                 answer[at] = None
-        #                 my_domain = copy.deepcopy(domain)
-        #                 continue
-        #             if None not in answer:
-        #                 return answer
-        #             else:
-        #                 return backtrack(at + 1, my_domain)
-
-        #         else:
-        #             if self.is_safe(answer):
-        #                 if (None not in answer):
-        #                     return answer
-        #                 if backtrack(at + 1, domain):
-        #                     return answer
-        #     return False
-        
+        elif fc:
+            return self.backtrack_fc(answer, 0, self.domain, mrv)        
 
     def backtrack(self, answer, at):
         for option in self.domain[at]:
@@ -62,8 +30,9 @@ class CSP:
             answer[at] = None
         return False
 
-    def backtrack_fc(self, answer, at, domain):
+    def backtrack_fc(self, answer, at, domain, mrv):
         my_domain = copy.deepcopy(domain)
+
         for option in my_domain[at]:
             answer[at] = option
             if not self.is_safe(answer):
@@ -77,12 +46,25 @@ class CSP:
                 continue
             if None not in answer:
                 return answer
-            if self.backtrack_fc(answer, at + 1, my_domain):
+            new_at = self.find_at(my_domain, answer) if mrv else (at + 1)
+            new_at = at + 1
+            if self.backtrack_fc(answer, new_at, my_domain, mrv):
                 return answer
             answer[at] = None
             my_domain = copy.deepcopy(domain)
-            
+        return False
 
+    def find_at(self, domain, answer):
+        minim = -1
+        at = None
+        for i, d in enumerate(domain):
+            if answer[i] != None:
+                continue
+            if len(d) < minim or minim == -1:
+                minim = len(d)
+                at = i
+        return at
+        
 def forward_check(graph, node_types, answer, node, domain):
     if node_types[node] == 'C': return
     do_sum = node_types[node] == 'P' or node_types[node] == 'H'
@@ -181,7 +163,7 @@ def main():
     csp = CSP(len(graph), domain, lambda x: is_safe(graph, node_types, x),  lambda x, y, z: forward_check(graph, node_types, x, y, z))
     
     beg = time.time()
-    print(csp.solve(fc=True, mrv=False))
+    print(csp.solve(fc=True, mrv=True))
     end = time.time()
     print(end - beg)
 

@@ -1,5 +1,7 @@
 import copy
 import time
+import itertools
+from functools import reduce
 
 class CSP:
     def __init__(self, length, domain, is_safe, check):
@@ -64,6 +66,9 @@ class CSP:
         my_domain = copy.deepcopy(domain)
         for option in my_domain[at]:
             answer[at] = option
+            if not self.is_safe(answer):
+                answer[at] = None
+                continue
             my_domain[at] = [option]
             empty = self.check(answer, at, my_domain)
             if empty:
@@ -72,46 +77,50 @@ class CSP:
                 continue
             if None not in answer:
                 return answer
-            else:
-                return self.backtrack_fc(answer, at + 1, my_domain)
+            if self.backtrack_fc(answer, at + 1, my_domain):
+                return answer
+            answer[at] = None
+            my_domain = copy.deepcopy(domain)
+            
 
 def forward_check(graph, node_types, answer, node, domain):
+    if node_types[node] == 'C': return
+    do_sum = node_types[node] == 'P' or node_types[node] == 'H'
+    do_left = node_types[node] == 'T' or node_types[node] == 'P'
 
-    for nei1 in graph[node]:
-        if node_types[nei1] == 'C': continue
-        do_sum = node_types[nei1] == 'P' or node_types[nei1] == 'H'
-        do_left = node_types[nei1] == 'T' or node_types[nei1] == 'P'
+    list_of_domains = []
+    for nei in graph[node]:
+        list_of_domains.append(domain[nei])
+    all_possibles = list(itertools.product(*list_of_domains))
 
-        all_possible = [answer[node]]
-        for nei2 in graph[node]:
-            if (nei2 == node):
-                continue
-            temp = []
-            for y in all_possible:
-                for d in domain[nei2]:
-                    if do_sum:
-                        temp.append(y + d)
-                    else:
-                        temp.append(y * d)
+    i = 0
+    while i < len(all_possibles):
+        if do_sum:
+            n = sum(all_possibles[i])
+        else:
+            n = reduce((lambda x, y: x * y), all_possibles[i])
+        if do_left:
+            while n >= 10: n = n // 10
+        else: n = n % 10
+        if n != answer[node]:
+            all_possibles.remove(all_possibles[i])
+            i -= 1
+        i += 1
 
-            all_possible = temp
-        
-        for i in range(len(all_possible)):
-            n = all_possible[i]
-            if do_left:
-                while n >= 10: n = n // 10
-            else: n = n % 10
-            all_possible[i] = n
-
+    for idx, nei in enumerate(graph[node]):
         i = 0
-        while i < len(domain[nei1]):
-            x = domain[nei1][i]
-            if x not in all_possible:
-                list.remove(domain[nei1], x)
+        while i < len(domain[nei]):
+            d = domain[nei][i]
+            flag = False
+            for possible in all_possibles:
+                if d == possible[idx]:
+                    flag = True
+                    break
+            if not flag:
+                domain[nei].remove(domain[nei][i])
                 i -= 1
             i += 1
-
-        if len(domain[nei1]) == 0:
+        if (len(domain[nei]) == 0):
             return True
 
     return False

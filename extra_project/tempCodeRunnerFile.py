@@ -1,2 +1,3 @@
-
-        return backtrack(0, copy.deepcopy(self.domain))
+elf.is_safe(answer):
+                answer[at] = None
+                contin

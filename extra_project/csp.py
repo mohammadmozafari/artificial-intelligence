@@ -47,7 +47,6 @@ class CSP:
             if None not in answer:
                 return answer
             new_at = self.find_at(my_domain, answer) if mrv else (at + 1)
-            new_at = at + 1
             if self.backtrack_fc(answer, new_at, my_domain, mrv):
                 return answer
             answer[at] = None
@@ -161,11 +160,17 @@ def main():
     domain = [[(i + 1) for i in range(9)] for j in range(len(graph))]
 
     csp = CSP(len(graph), domain, lambda x: is_safe(graph, node_types, x),  lambda x, y, z: forward_check(graph, node_types, x, y, z))
-    
-    beg = time.time()
-    print(csp.solve(fc=True, mrv=True))
-    end = time.time()
-    print(end - beg)
+    setups = [(False, False), (True, False), (True, True)]
+    for setup in setups:
+        print('-------------------------------------------')
+        print('forward checking:', setup[0])
+        print('mrv:', setup[1])
+        beg = time.time()
+        result = csp.solve(fc=setup[0], mrv=setup[1])
+        end = time.time()
+        for i in result:
+            print(i, end=' ')
+        print('\nsolved in %f seconds' % (end - beg))
 
 if __name__ == '__main__':
     main()

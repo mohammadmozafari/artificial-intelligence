@@ -1,4 +1,4 @@
-# Artifitial Intelligence Project
+# Artificial Intelligence Project
 
 Projects:
 
